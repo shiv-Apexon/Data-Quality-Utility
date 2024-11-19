@@ -17,11 +17,11 @@
 
         <!-- Form Section -->
         <div class="col-md-6 mx-auto mt-5">
-            <form method="POST" action="connect-db/">
+            <form method="POST" action="connect_db/">
                 {% csrf_token %}
                 <div class="mb-3">
                     <label for="id_database" class="form-label">Select Database</label>
-                    <select class="form-select" id="id_database" name="database_engine" aria-label="Select Database">
+                    <select class="form-select" id="id_database" name="database_engine" aria-label="Select Database" required>
                         <option value="mysql">MySQL</option>
                         <option value="mssql">MSSQL</option>
                         <option value="postgre">PostGre</option>
@@ -30,19 +30,19 @@
 
 
                 <div class="mb-3">
-                    <label for="hostname" class="form-label">Hostname</label>
-                    <input type="text" name="hostname" class="form-control">
+                    <label for="host" class="form-label">Hostname</label>
+                    <input type="text" name="hostname" class="form-control" required>
 
                 </div>
                 <div class="mb-3">
                     <label for="id_username" class="form-label">Username</label>
-                    <input type="text" name="username" class="form-control">
+                    <input type="text" name="username" class="form-control" required>
 
                 </div>
 
                 <div class="mb-3">
                     <label for="id_password" class="form-label">Password</label>
-                    <input type="password" name="password" class="form-control">
+                    <input type="password" name="password" class="form-control" required minlength="2">
                     <div class="form-text">We'll never share your password with anyone else.</div>
                 </div>
 
@@ -50,9 +50,9 @@
                     <button type="submit" class="btn btn-primary">Select</button>
                 </div>
             </form>
-            {% if message %}
+            {% if massage %}
             <div>
-                <div class="alert alert-danger d-flex align-items-center mt-4" role="alert">
+                <div class="alert alert-primary d-flex align-items-center mt-4" role="alert">
                     <svg xmlns="http://www.w3.org/2000/svg" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2"
                         viewBox="0 0 16 16" role="img" aria-label="Warning:">
                         <path
