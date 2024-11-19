@@ -15,7 +15,7 @@
 
     <!-- Form Section -->
     <div class="col-md-6 mx-auto mt-5">
-        <form method="POST" action="connect_db/">
+        <form method="POST" action="connect-db/">
             {% csrf_token %}
             <div class="mb-3">
                 <label for="id_database" class="form-label">Select Database</label>
@@ -29,7 +29,7 @@
             
             <div class="mb-3">
                 <label for="hostname" class="form-label">Hostname</label>
-                <input type="text" name="hostname" class="form-control">
+                <input type="text" name="host" class="form-control">
   
             </div>
             <div class="mb-3">
@@ -48,7 +48,7 @@
                 <button type="submit" class="btn btn-primary">Select</button>
             </div>
         </form>
-            {% if massage %}
+            {% if message %}
                 <div>{{ message }}</div>
             {% endif%}
 
