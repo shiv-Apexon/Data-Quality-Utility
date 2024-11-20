@@ -141,3 +141,6 @@ STATICFILES_DIRS = [
 
 # Static files from each app (if any)
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+#Added
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
