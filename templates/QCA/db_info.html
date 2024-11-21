@@ -55,10 +55,19 @@
 
         <!-- Submit Button (Initially Disabled) -->
         <div class="mt-3">
-            <button type="submit" class="btn btn-primary" id="submit_btn" disabled>Submit</button>
+            <button type="submit" class="btn btn-primary" id="submit_btn" disabled>Generate Report</button>
         </div>
     </div>
-
+    <div id="report_area">
+        {% for column, counts in report.items %}
+            <h4>{{ column }}:</h4>
+            <ul>
+                <li>Null values: {{ counts.null_count }}</li>
+                <li>Empty values: {{ counts.empty_count }}</li>
+                <li>Improper values: {{ counts.improper_count }}</li>
+            </ul>
+        {% endfor %}
+    </div>
     <script>
         // Initialize Select2 for the dropdowns
         $(document).ready(function() {
@@ -90,6 +99,11 @@
                             tables.forEach(function(table) {
                                 $('#table_select').append('<option value="' + table + '">' + table + '</option>');
                             });
+
+                        }
+                        else {
+                            // Show a message when there are no columns (no table data)
+                            $('#table_select').html('<p>No table available</p>');
                         }
                     }
                 });
@@ -100,54 +114,109 @@
             }
         });
 
+
+
+
+
+
+
+
         // When a table is selected
         $('#table_select').change(function() {
-            var tableName = $(this).val();
-            var dbName = $('#db_select').val();
+        var tableName = $(this).val();  // Get selected table
+        var dbName = $('#db_select').val();  // Get selected database
 
-            if (tableName) {
-                // Show columns section and reset columns list
-                $('#columns_section').show();
-                $('#columns_list').html('');
+        if (tableName) {
+            // Show columns section and reset columns list
+            $('#columns_section').show();
+            $('#columns_list').html('');
 
-                // Fetch columns for the selected table via AJAX
-                $.ajax({
-                    url: "{% url 'get_columns' %}",
-                    type: "GET",
-                    data: {
-                        'db_name': dbName,
-                        'table_name': tableName
-                    },
-                    success: function(data) {
-                        // Append columns as checkboxes
-                        var columns = data.columns;
-                        if (columns.length > 0) {
-                            columns.forEach(function(column) {
-                                $('#columns_list').append(
-                                    '<div class="form-check">' +
+            // Fetch columns for the selected table via AJAX
+            $.ajax({
+                url: "{% url 'get_columns' %}",
+                type: "GET",
+                data: {
+                    'db_name': dbName,  // Send selected db_name
+                    'table_name': tableName  // Send selected table_name
+                },
+                success: function(data) {
+                    var columns = data.columns;
+                    if (columns.length > 0) {
+                        columns.forEach(function(column) {
+                            $('#columns_list').append(
+                                '<div class="form-check">' +
                                     '<input class="form-check-input" type="checkbox" name="columns" value="' + column + '" id="column_' + column + '" />' +
                                     '<label class="form-check-label" for="column_' + column + '">' + column + '</label>' +
-                                    '</div>'
-                                );
-                            });
-                        }
+                                    '<input type="text" class="form-control condition-input" id="condition_' + column + '" placeholder="Enter condition for ' + column + '" />' +
+                                '</div>'
+                            );
+                        });
+                    } else {
+                        // Show a message when there are no columns (no table data)
+                        $('#columns_list').html('<p>No columns available</p>');
                     }
-                });
-            } else {
-                // Hide the columns section if no table is selected
-                $('#columns_section').hide();
-            }
+                }
+            });
+        } else {
+            // Hide the columns section if no table is selected
+            $('#columns_section').hide();
+        }
+    });
+
+    // Enable submit button when at least one column is selected
+    $(document).on('change', "input[name='columns']", function() {
+        var selectedColumns = $("input[name='columns']:checked").length;
+        if (selectedColumns > 0) {
+            $('#submit_btn').prop('disabled', false);  // Enable submit button
+        } else {
+            $('#submit_btn').prop('disabled', true);   // Disable submit button
+        }
+    });
+
+    // Collect selected columns and their conditions when the submit button is clicked
+    $('#submit_btn').click(function() {
+        var selectedColumns = [];
+        var conditions = {};
+        var dbName = $('#db_select').val();  // Get the selected database name
+        var tableName = $('#table_select').val();  // Get the selected table name
+
+        // Get the selected columns and their conditions
+        $('input[name="columns"]:checked').each(function() {
+            var column = $(this).val();  // Get selected column name
+            var condition = $('#condition_' + column).val();  // Get the condition input for this column
+            selectedColumns.push(column);
+            conditions[column] = condition;  // Store the condition for this column
         });
 
-        // Enable submit button when at least one column is selected
-        $(document).on('change', "input[name='columns']", function() {
-            var selectedColumns = $("input[name='columns']:checked").length;
-            if (selectedColumns > 0) {
-                $('#submit_btn').prop('disabled', false);  // Enable submit button
-            } else {
-                $('#submit_btn').prop('disabled', true);   // Disable submit button
+        // Send the selected columns, conditions, db_name, and table_name to the backend
+        $.ajax({
+            url: '/generate_report/',  // Django view URL
+            type: 'POST',
+            data: {
+                'db_name': dbName,  // Send db_name
+                'table_name': tableName,  // Send table_name
+                'columns': selectedColumns,  // Send the selected columns
+                'conditions': JSON.stringify(conditions),  // Send conditions as a JSON object
+                'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),  // CSRF token
+            },
+            success: function(response) {
+                $('#report_area').html(response.report);  // Display the generated report
+            },
+            error: function(xhr, status, error) {
+                console.error("Error: " + error);
             }
         });
+    });
+
+
+
+
+
+
+
+
+
+
         $('#close_connection_btn').click(function() {
         $.ajax({
             type: 'POST',

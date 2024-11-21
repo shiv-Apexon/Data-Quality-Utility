@@ -1,0 +1,10 @@
+<div id="report_area">
+    {% for column, counts in report.items %}
+        <h4>{{ column }}:</h4>
+        <ul>
+            <li>Null values: {{ counts.null_count }}</li>
+            <li>Empty values: {{ counts.empty_count }}</li>
+            <li>Improper values: {{ counts.improper_count }}</li>
+        </ul>
+    {% endfor %}
+</div>

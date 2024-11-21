@@ -9,5 +9,6 @@ urlpatterns = [
     path('get_columns/', views.get_columns, name='get_columns'),
     path("", views.index, name="index"),
     path('close_connection/', views.close_connection, name='close_connection'),
+    path('generate_report/', views.generate_report, name='generate_report'),
 
 ]

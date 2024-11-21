@@ -8,7 +8,10 @@ import pyodbc # For MSSQL
 import pymysql # For MySQL
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
+import json
+from django.http import JsonResponse
+from django.db import connection
+from django.template.loader import render_to_string
 
 
 toaster = ToastNotifier()
@@ -237,8 +240,6 @@ def get_columns(request):
 @csrf_exempt
 def close_connection(request):
     db_config = request.session.get('db_config')
-    print("----------------------------------------------------------------------------------")
-    print(db_config)
     engine = db_config['db_engine']
 
         
@@ -265,4 +266,66 @@ def close_connection(request):
                 conn.close()
                 request.session.clear() 
                 return JsonResponse({'redirect_url': '/connect-db'})
-    
+
+
+@csrf_exempt
+def generate_report(request):
+    if request.method == 'POST':
+        db_config = request.session.get('db_config')
+        engine = db_config['db_engine']
+        if engine == 'mysql':
+            db_name = request.POST.get('db_name')  # Get the database name
+            table_name = request.POST.get('table_name')  # Get the table name
+            selected_columns = request.POST.getlist('columns')  # Get selected columns
+            conditions = json.loads(request.POST.get('conditions'))  # Parse the conditions JSON
+            host = db_config['host']
+            user = db_config['username']
+            password = db_config['password']
+
+            # Set the database connection (if necessary)
+            conn = pymysql.connect(host=host, user=user, password=password)
+            cursor = conn.cursor()
+            cursor.execute(f"USE {db_name};")  # Use the specified database
+
+            # Initialize the report dictionary
+            report = {}
+
+            # Query each selected column with the conditions
+            for column in selected_columns:
+                # Get the user-supplied condition for the column, if provided
+                user_condition = conditions.get(column, "")
+
+                # Default WHERE clause for null condition
+                where_clause = f"WHERE {column} IS NULL"
+
+                # If a user condition is provided, use it in the WHERE clause
+                if user_condition:
+                    where_clause = f"WHERE {user_condition}"
+
+                # Prepare SQL queries for null, empty, and improper values
+                query_null = f"SELECT COUNT(*) FROM {table_name} Where {column} IS NULL"
+                query_empty = f"SELECT COUNT(*) FROM {table_name} Where {column} = ''"
+                query_improper = f"SELECT COUNT(*) FROM {table_name} {where_clause} OR {column}'"
+
+                # Execute the queries and fetch counts
+                with connection.cursor() as cursor:
+                    cursor.execute(query_null)
+                    null_count = cursor.fetchone()[0]
+
+                    cursor.execute(query_empty)
+                    empty_count = cursor.fetchone()[0]
+
+                    cursor.execute(query_improper)
+                    improper_count = cursor.fetchone()[0]
+
+                # Add the result for the current column to the report
+                report[column] = {
+                    'null_count': null_count,
+                    'empty_count': empty_count,
+                    'improper_count': improper_count,
+                }
+
+            # Render the report HTML using the template and return it as a JSON response
+            return JsonResponse({'report': render_to_string('QCA/report_template.html', {'report': report})})
+
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
