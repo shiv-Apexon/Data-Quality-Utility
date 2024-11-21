@@ -11,25 +11,90 @@
 <div class="container mt-5">
     <h1>Quality Check Report for {{ database }} - {{ table }}</h1>
 
-    <table class="table table-bordered">
+    <table class="table table-light table-bordered table-hover mt-3">
         <thead>
             <tr>
                 <th>Column</th>
                 <th>Quality Check</th>
                 <th>Count</th>
+                <th>Quality</th>
             </tr>
         </thead>
         <tbody>
             {% for key,value in report.items %}
                 <tr>
-                    <td rowspan="2">{{ key }}</td>
+                    <td rowspan="8">{{ key }}</td>
                     <td>Null Values</td>
                     <td>{{ value.null_count }}</td>
+                    <td rowspan="8">{{ value.valid_percentage|floatformat:2}}</td>
                 </tr>
+
+                <tr>
+                    <td>Unique values</td>
+                    <td>{{ value.unique_count }}</td>
+                </tr>
+                
+                {% if value.missing_count != 0 %}
                 <tr>
                     <td>Missing or Empty Values</td>
                     <td>{{ value.missing_count }}</td>
                 </tr>
+                {% else %}
+                <tr>
+                </tr>
+                {% endif %}
+
+                {% if value.long_values != 0 %}
+                <tr>
+                    <td>Long values</td>
+                    <td>{{ value.long_values }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                </tr>
+                {% endif %}
+                {% if key == 'age'|default:" " %}
+                <tr>
+                    <td>Over/Under age</td>
+                    <td>{{ value.invalid_age }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                </tr>
+                {% endif %}
+
+                {% if value.negative_salary %}
+                <tr>
+                    <td>Negative_salary</td>
+                    <td>{{ value.negative_salary }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                </tr>
+                {% endif %}
+
+                
+                {% if value.leading_trailing_spaces != 0 %}
+                <tr>
+                    <td>Spaces before & after value</td>
+                    <td>{{ value.leading_trailing_spaces }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                </tr>
+                {% endif %}
+                
+                {% if value.invalid_email %}
+                <tr>
+                    <td>Invalid emails</td>
+                    <td>{{ value.invalid_emails }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                </tr>
+                {% endif %}
+
+
             {% endfor %}
         </tbody>
     </table>

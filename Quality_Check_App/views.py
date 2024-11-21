@@ -1,29 +1,36 @@
 from django.shortcuts import render, redirect
 import mysql.connector
 import ast
+from win10toast import ToastNotifier
+
+toaster = ToastNotifier()
+RUN_ONCE = False
 
 # View for the credentials form page
 def credentials_form(request):
     if request.method == "POST":
         # Get credentials from the form
+        database = request.POST.get('engine')#main RDBMS
         hostname = request.POST.get('hostname')
         username = request.POST.get('username')
         password = request.POST.get('password')
 
         # Store the credentials in the session or elsewhere
         request.session['db_conn_details'] = {
+            'database': database,
             'hostname': hostname,
             'username': username,
             'password': password
         }
+        global RUN_ONCE
+        RUN_ONCE = False
         # After the form is submitted, redirect to the select_database page
         return redirect('select_database')  # Correct redirect to select_database URL
 
     return render(request, 'QCA/credentials_form.html')  # Render the form if GET request
 
-# View for selecting the database, table, and columns
-
-def get_mysql_connection(request):
+#Helper function to connect to the mysql db
+def _get_mysql_connection(request):
     # Retrieve connection details from session
     conn_details = request.session.get('db_conn_details')
     if not conn_details:
@@ -40,56 +47,83 @@ def get_mysql_connection(request):
         )
         return conn
     except Exception as e:
+        message = "Failed to connect to the database."
+        toaster.show_toast("Connection Status", message, duration=2)
         return None
+        # context = {
+        #     'message':message
+        # }
+        # return render(request, 'QCA/credentials_form.html',context)
 
+# View for selecting the database, table, and columns
 def select_database(request):
+
+    conn_details = request.session.get('db_conn_details')
+    global RUN_ONCE
+    if conn_details['database']=='mysql':
     # Get MySQL connection
-    conn = get_mysql_connection(request)
-    if not conn:
-        return redirect('credentials_form')  # If no connection, redirect to credentials form
+        conn = _get_mysql_connection(request)
+        if not conn:
+            context = {
+                'message': "Failed to connect to the database."
+            }
+            return render(request, 'QCA/credentials_form.html',context)  # If no connection, redirect to credentials form
 
-    cursor = conn.cursor()
+        if RUN_ONCE == False:
+            message = "Connected to the Mysql successfully"
+            toaster.show_toast("Connection Status", message, duration=2)
+            RUN_ONCE = True
 
-    # Fetch the list of databases
-    cursor.execute("SHOW DATABASES")
-    databases = [row[0] for row in cursor.fetchall()]
+        cursor = conn.cursor()
 
-    selected_database = request.GET.get('database')
-    tables = []
-    columns = []
+        # Fetch the list of databases
+        cursor.execute("SHOW DATABASES")
+        databases = [row[0] for row in cursor.fetchall()]
 
-    if selected_database:
-        # Select the database
-        cursor.execute(f"USE {selected_database};")
+        #Database name inside mysql
+        selected_database = request.GET.get('database')
+        tables = []
+        columns = []
 
-        # Fetch the list of tables
-        cursor.execute("SHOW TABLES")
-        tables = [row[0] for row in cursor.fetchall()]
+        if selected_database:
+            # Select the database
+            cursor.execute(f"USE {selected_database};")
 
-        selected_table = request.GET.get('table')
-        if selected_table:
-            # Fetch columns for the selected table
-            cursor.execute(f"DESCRIBE {selected_table}")
-            columns = [row[0] for row in cursor.fetchall()]
+            # Fetch the list of tables
+            cursor.execute("SHOW TABLES")
+            tables = [row[0] for row in cursor.fetchall()]
 
-    context = {
-        'databases': databases,
-        'tables': tables,
-        'columns': columns,
-        'selected_database': selected_database,
-        'selected_table': request.GET.get('table'),
-    }
+            selected_table = request.GET.get('table')
+            if selected_table:
+                # Fetch columns for the selected table
+                cursor.execute(f"DESCRIBE {selected_table}")
+                columns = [row[0] for row in cursor.fetchall()]
 
-    # Redirect to the report generation page when columns are selected
-    if request.GET.getlist('columns'):
-        return redirect('generate_report', database=selected_database, table=selected_table, columns=request.GET.getlist('columns'))
+        context = {
+            'databases': databases,
+            'tables': tables,
+            'columns': columns,
+            'selected_database': selected_database,
+            'selected_table': request.GET.get('table'),
+        }
 
-    return render(request, 'QCA/select_database.html', context)
+        # Redirect to the report generation page when columns are selected
+        if request.GET.getlist('columns'):
+            return redirect('generate_report', database=selected_database, table=selected_table, columns=request.GET.getlist('columns'))
+
+        return render(request, 'QCA/select_database.html', context)
+    
+    #for other rdbms
+    else:
+        context = {
+        'message' : "Other RDBMS are not available yet"
+        }
+        return render(request, 'QCA/credentials_form.html',context)
 
 # Example view for generating the report (for completeness)
 def generate_report(request, database, table, columns):
     # Get MySQL connection
-    conn = get_mysql_connection(request)
+    conn = _get_mysql_connection(request)
     if not conn:
         return redirect('credentials_form')  # If no connection, redirect to credentials form
 
@@ -105,35 +139,73 @@ def generate_report(request, database, table, columns):
     # columns = columns = columns.split()
     # columns = ' '.join(columns)
     # columns = columns.split()
+    cursor.execute(f"SELECT COUNT(*) FROM {table}")
+    total_rows = cursor.fetchone()[0]
 
     columns = ast.literal_eval(columns)
     # Loop through the columns and calculate quality checks
     for column in columns:
-        column = column.strip("'[],")
-        if column:  # Ensure column is not empty
-            try:
-                # Count NULL values for the column
-                cursor.execute(f"SELECT COUNT(*) FROM {table} WHERE {column} IS NULL")
-                null_count = cursor.fetchone()[0]
+            column_report = {}
 
-                # Count missing values (empty strings or NULL)
-                cursor.execute(f"SELECT COUNT(*) FROM {table} WHERE {column} = '' OR {column} IS NULL")
-                missing_count = cursor.fetchone()[0]
+            # 1. Null Value Count
+            cursor.execute(f"SELECT COUNT(*) FROM {table} WHERE {column} IS NULL")
+            column_report['null_count'] = cursor.fetchone()[0]
 
-                # Store the counts in the report dictionary
-                report[column] = {
-                    'null_count': null_count,
-                    'missing_count': missing_count
-                }
-            except mysql.connector.Error as err:
-                # If there's a MySQL error (invalid column, etc.), record the error for that column
-                report[column] = {'error': f"SQL Error: {err}"}
+            # 2. Missing Value Count (Empty Strings)
+            cursor.execute(f"SELECT COUNT(*) FROM {table} WHERE {column} = ''")
+            column_report['missing_count'] = cursor.fetchone()[0]
+
+            # 3. Duplicate Count
+            # cursor.execute(f"SELECT COUNT(*) - COUNT(DISTINCT {column}) FROM {table}")
+            # column_report['duplicate_count'] = cursor.fetchone()[0]
+
+            # 4. Unique Values Count
+            cursor.execute(f"SELECT COUNT(DISTINCT {column}) FROM {table}")
+            column_report['unique_count'] = cursor.fetchone()[0]
+
+            # # 5. Out-of-Range Values (for numeric columns, example: range 0-100)
+            # cursor.execute(f"SELECT COUNT(*) FROM {table} WHERE {column} < 0 OR {column} > 100")
+            # column_report['out_of_range'] = cursor.fetchone()[0]
+
+            # 6. Age Validity Check (for "age" column)
+            if column.lower() == 'age':
+                cursor.execute(f"SELECT COUNT(*) FROM {table} WHERE {column} < 18 OR {column} > 100")
+                column_report['invalid_age'] = cursor.fetchone()[0]
+
+            # 7. Positive Values Check (example: salary)
+            if column.lower() == 'salary':  # You can customize this based on your column names
+                cursor.execute(f"SELECT COUNT(*) FROM {table} WHERE {column} < 0")
+                column_report['negative_salary'] = cursor.fetchone()[0]
+
+            # 7. Leading/Trailing Spaces (only for string columns)
+            cursor.execute(f"SELECT COUNT(*) FROM {table} WHERE {column} REGEXP '^\\s|\\s$'")
+            column_report['leading_trailing_spaces'] = cursor.fetchone()[0]
+
+            # # 8. Invalid Email Format (if column is an email column)
+            if column.lower() == 'email':
+                cursor.execute(f"SELECT COUNT(*) FROM {table} WHERE {column} NOT REGEXP '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$'")
+                column_report['invalid_email'] = cursor.fetchone()[0]
+
+            # 9. Length Check (only for string columns)
+            cursor.execute(f"SELECT COUNT(*) FROM {table} WHERE LENGTH({column}) > 100")  # Example: check length > 100
+            column_report['long_values'] = cursor.fetchone()[0]
+
+            # Calculate valid data percentage
+            invalid_rows = column_report['null_count'] + column_report['missing_count']
+            valid_rows = total_rows - invalid_rows
+            column_report['valid_percentage'] = (valid_rows / total_rows) * 100
+
+            # Add the column's quality check results to the report
+            report[column] = column_report
+
     context = {
         'database': database,
         'table': table,
         'columns': columns,
         'report': report
     }
+
+    #Testing
     print("-----------------------------------------------------",columns)
     print(context)
     return render(request, 'QCA/quality_check_report.html', context)
