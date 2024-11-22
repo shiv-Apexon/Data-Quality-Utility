@@ -1,10 +1,115 @@
-<div id="report_area">
-    {% for column, counts in report.items %}
-        <h4>{{ column }}:</h4>
-        <ul>
-            <li>Null values: {{ counts.null_count }}</li>
-            <li>Empty values: {{ counts.empty_count }}</li>
-            <li>Improper values: {{ counts.improper_count }}</li>
-        </ul>
-    {% endfor %}
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ report.title }}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Full screen overlay with blur background */
+        #report_area {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.301); /* Semi-transparent black background */
+            backdrop-filter: blur(8px); /* Apply blur to the background */
+            z-index: 9999; /* Make sure it is on top of everything else */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Table styling */
+        table {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        /* Button styling */
+        .download-btn {
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .download-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* Close button */
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Report Area (Overlay) -->
+    <div id="report_area" class="container" >
+        <!-- Close button -->
+        <span class="close-btn" onclick="document.getElementById('report_area').style.display = 'none';">&times;</span>
+        
+        <!-- Download Button -->
+        <button class="download-btn" onclick="downloadReport()">Download Report</button>
+        
+        <!-- Report Content (Table) -->
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Column</th>
+                    <th>Null Values</th>
+                    <th>Empty Values</th>
+                    <th>Unique Values</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for column, counts in report.items %}
+                <tr>
+                    <td>{{ column }}</td>
+                    <td>{{ counts.null_count }}</td>
+                    <td>{{ counts.empty_count }}</td>
+                    <td>{{ counts.unique_count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+       
+</body>
+</html>
