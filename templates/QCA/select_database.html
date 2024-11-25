@@ -40,12 +40,6 @@
         <!-- Multi-column selection based on selected table -->
         <div class="mb-3">
             <label for="columns" class="form-label">Select Columns</label>
-            <!-- <select name="columns" id="columns" class="form-select" multiple onchange="this.form.submit()">
-                <option value="" disabled>Select Columns</option>
-                {% for column in columns %}
-                    <option value="{{ column }}" {% if column in request.GET.columns %}selected{% endif %}>{{ column }}</option>
-                {% endfor %}
-             -->
             {% for column in columns %}
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" name="columns" value="{{ column }}" id="column_{{ column }}">

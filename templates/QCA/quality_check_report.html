@@ -11,7 +11,7 @@
 <div class="container mt-5">
     <h1>Quality Check Report for {{ database }} - {{ table }}</h1>
 
-    <table class="table table-light table-bordered table-hover mt-3">
+    <table class="table table-light table-bordered table-hover mt-3 overflow-auto" style="resize:both;">
         <thead>
             <tr>
                 <th>Column</th>
@@ -26,7 +26,7 @@
                     <td rowspan="8">{{ key }}</td>
                     <td>Null Values</td>
                     <td>{{ value.null_count }}</td>
-                    <td rowspan="8">{{ value.valid_percentage|floatformat:2}}</td>
+                    <td rowspan="8">{{ value.valid_percentage|floatformat:2}} %</td>
                 </tr>
 
                 <tr>
