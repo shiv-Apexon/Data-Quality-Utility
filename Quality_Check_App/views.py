@@ -100,6 +100,12 @@ def connect_db(request):
                 # If there is an error, send an appropriate message
                 message = f"Error: Connection Failed"
                 toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
+        
+        else:
+            message = "Other RDBMS are not available yet"
+            toaster.show_toast("Connection Status", message, duration=2) 
+            return render(request, 'QCA/index.html', {'message': message})
+
     return render(request, 'QCA/index.html', {'message': message})
 
 
