@@ -10,5 +10,6 @@ urlpatterns = [
     path("", views.index, name="index"),
     path('close_connection/', views.close_connection, name='close_connection'),
     path('generate_report/', views.generate_report, name='generate_report'),
+    path('save_column_details/', views.save_column_details, name='save_column_details'),
 
 ]

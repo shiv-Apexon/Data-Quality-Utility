@@ -6,7 +6,8 @@
     <title>Select Database, Table, and Columns</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <!-- Select2 CSS for searchable dropdowns -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
 
@@ -42,7 +43,7 @@
         <!-- Tables Dropdown (Searchable, Initially Hidden) -->
         <div class="mb-3" id="tables_section" style="display:none;">
             <label for="table_select" class="form-label">Select Table</label>
-            <select class="form-select" id="table_select" style="width: 100%" required>
+            <select class="form-select" id="table_select" style="width: 100%" required multiple = 'multiple'>
                 <option value="" selected disabled>Select a Table</option>
             </select>
         </div>
@@ -55,15 +56,20 @@
 
         <!-- Submit Button (Initially Disabled) -->
         <div class="mt-3">
-            <button type="submit" class="btn btn-primary" id="submit_btn" disabled onclick="document.getElementById('report_area').style.display = 'flex';">Generate Report</button>
+            <button type="submit" class="btn btn-primary" id="submit_btn"  onclick="document.getElementById('report_area').style.display = 'flex';">Generate Report</button>
+            <button type="submit" class="btn btn-primary" id="save_columns" >Save </button>
+
         </div>
     </div>
     <div id="report_area" ></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        // Initialize Select2 for the dropdowns
+                // Initialize Select2 for the dropdowns
         $(document).ready(function() {
+            // Initialize Select2 on the select elements
             $('#db_select').select2();
-            $('#table_select').select2();
+            $('#table_select').select2(); // This will now handle multi-select automatically after we add 'multiple' attribute
         });
 
         // When a database is selected
@@ -75,26 +81,30 @@
                 $('#tables_section').show();
                 $('#columns_section').hide();
                 $('#columns_list').html('');
-                $('#table_select').html('<option value="" selected disabled>Select a Table</option>'); // Reset table options
+                
+                // Reset the table options (allow multiple selections)
+                $('#table_select').html('<option value="" disabled>Select a Table</option>'); // Reset table options
                 
                 // Fetch tables for the selected database via AJAX
                 $.ajax({
                     url: "{% url 'get_tables' %}",
                     type: "GET",
-                    data: { 'db_name': dbName,
-                     },
+                    data: { 'db_name': dbName },
                     success: function(data) {
                         // Append tables to the tables dropdown
                         var tables = data.tables;
                         if (tables.length > 0) {
+                            // Loop through the tables and append each one as an option
                             tables.forEach(function(table) {
                                 $('#table_select').append('<option value="' + table + '">' + table + '</option>');
                             });
-
+                            
+                            // Initialize or re-initialize Select2 for the multi-select
+                            $('#table_select').select2(); // Ensure it works after dynamically adding options
                         }
                         else {
-                            // Show a message when there are no columns (no table data)
-                            $('#table_select').html('<p>No table available</p>');
+                            // Show a message when there are no tables
+                            $('#table_select').html('<p>No tables available</p>');
                         }
                     }
                 });
@@ -108,93 +118,282 @@
 
 
 
-
-
-
-
-        // When a table is selected
         $('#table_select').change(function() {
-        var tableName = $(this).val();  // Get selected table
         var dbName = $('#db_select').val();  // Get selected database
+        var selectedTables = $('#table_select').val();  // Get selected tables (array of table names)
 
-        if (tableName) {
-            // Show columns section and reset columns list
+        if (selectedTables.length > 0) {
             $('#columns_section').show();
             $('#columns_list').html('');
-
-            // Fetch columns for the selected table via AJAX
             $.ajax({
-                url: "{% url 'get_columns' %}",
+                url: "{% url 'get_columns' %}",  // URL to your Django view
                 type: "GET",
                 data: {
-                    'db_name': dbName,  // Send selected db_name
-                    'table_name': tableName  // Send selected table_name
+                    'db_name': dbName,
+                    'table_name': selectedTables  // Send selected table names as an array
                 },
                 success: function(data) {
-                    var columns = data.columns;
-                    if (columns.length > 0) {
+                    var tableAndColumns = data.table_and_columns;  // Get the table and columns data
+                    console.log(tableAndColumns)
+                    // Loop through each table and display its columns (handle this as needed)
+                    for (var tableName in tableAndColumns) {
+                        var columns = tableAndColumns[tableName];
+                        
+                        // Assuming you want to dynamically display these in HTML
+                        var tableSection = $('<div class="table-section" id="table_' + tableName + '">');
+                        tableSection.append('<hr><h5>' + tableName + '</h5><hr>');  // Add table name
+
                         columns.forEach(function(column) {
-                            $('#columns_list').append(
-                                '<div class="form-check">' +
-                                    '<input class="form-check-input" type="checkbox" name="columns" value="' + column + '" id="column_' + column + '" />' +
-                                    '<label class="form-check-label" for="column_' + column + '">' + column + '</label>' +
-                                '</div>'
-                            );
-                        });
-                    } else {
-                        // Show a message when there are no columns (no table data)
-                        $('#columns_list').html('<p>No columns available</p>');
+                        var columnDiv = $('<div class="form-group">');
+                        columnDiv.append('<label style = "font-weight: 600">' + column + ':</label>');
+
+                        // Create the dropdown button for column types
+                        var dropdownHTML = `
+                            <div class="mb-3">
+                                <label for="column_select" class="form-label">Select Column Types</label>
+                                <div id="column_select">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="1" id="null_type">
+                                        <label class="form-check-label" for="null_type">
+                                            NULL
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="2" id="string_type">
+                                        <label class="form-check-label" for="string_type">
+                                            STRING
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="3" id="number_type">
+                                        <label class="form-check-label" for="number_type">
+                                            NUMBER
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="4" id="date_type">
+                                        <label class="form-check-label" for="date_type">
+                                            DATE
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="5" id="boolean_type">
+                                        <label class="form-check-label" for="boolean_type">
+                                            BOOLEAN
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="6" id="timestamp_type">
+                                        <label class="form-check-label" for="timestamp_type">
+                                            TIMESTAMP
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                        `;
+                        
+                        // Append the dropdown to the column div
+                        columnDiv.append(dropdownHTML);
+
+                        // Append the column div to the table section
+                        tableSection.append(columnDiv);
+                    });
+
+                        $('#columns_list').append(tableSection);  // Append the table section to the DOM
                     }
+                },
+                error: function(error) {
+                    console.log("Error fetching columns:", error);
                 }
             });
-        } else {
-            // Hide the columns section if no table is selected
-            $('#columns_section').hide();
         }
     });
 
-    // Enable submit button when at least one column is selected
-    $(document).on('change', "input[name='columns']", function() {
-        var selectedColumns = $("input[name='columns']:checked").length;
-        if (selectedColumns > 0) {
-            $('#submit_btn').prop('disabled', false);  // Enable submit button
-        } else {
-            $('#submit_btn').prop('disabled', true);   // Disable submit button
-        }
-    });
 
-    // Collect selected columns and their conditions when the submit button is clicked
-    $('#submit_btn').click(function() {
-        var selectedColumns = [];
-        var conditions = {};
-        var dbName = $('#db_select').val();  // Get the selected database name
-        var tableName = $('#table_select').val();  // Get the selected table name
 
-        // Get the selected columns and their conditions
-        $('input[name="columns"]:checked').each(function() {
-            var column = $(this).val();  // Get selected column name
-            selectedColumns.push(column);
-            
-        });
 
-        // Send the selected columns, conditions, db_name, and table_name to the backend
-        $.ajax({
-            url: '/generate_report/',  // Django view URL
-            type: 'POST',
-            data: {
-                'db_name': dbName,  // Send db_name
-                'table_name': tableName,  // Send table_name
-                'columns': selectedColumns,  // Send the selected columns
-                'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),  // CSRF token
-            },
-            success: function(response) {
-                $('#report_area').html(response.report);  // Display the generated report
-            },
-            error: function(xhr, status, error) {
-                console.error("Error: " + error);
+
+    function saveColumnDetails() {
+    // Prepare the data object to hold database name, tables, columns, and selected types
+    var reportData = {};
+
+    // Get the database name (you may need to update this to get it dynamically, if necessary)
+    var dbName = $('#db_select').val(); // Assuming you have a field for the database name
+
+    // Add database name to the report data
+    reportData.db_name = dbName;
+
+    // Iterate over the table sections
+    $('.table-section').each(function() {
+        var tableName = $(this).find('h5').text(); // Get the table name
+        var columns = {};
+
+        // Iterate over each column in the table section
+        $(this).find('.form-group').each(function() {
+            var columnName = $(this).find('label').first().text().replace(':', ''); // Get column name
+            var selectedTypes = [];
+
+            // Check which checkboxes are selected for this column
+            $(this).find('.form-check-input:checked').each(function() {
+                var typeValue = $(this).val();
+                selectedTypes.push(typeValue); // Add selected type to array
+            });
+
+            // If no checkboxes are selected, we don't need to include the column
+            if (selectedTypes.length > 0) {
+                // Add the column's selected types to the columns object
+                columns[columnName] = selectedTypes;
             }
         });
+
+        // If the table has any selected columns, add it to the reportData object
+        if (Object.keys(columns).length > 0) {
+            reportData[tableName] = columns;
+        }
     });
+
+    // Send the gathered data via an AJAX request
+    $.ajax({
+        url: '/save_column_details/',  // Your Django view URL for saving the column details
+        type: 'POST',
+        data: {
+            report_data: JSON.stringify(reportData),  // Send the reportData object as a JSON string
+            csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()  // CSRF token for security
+        },
+        success: function(response) {
+            // Handle the server response here (e.g., display a success message)
+            console.log('Column details saved successfully:', response);
+            alert('Column details saved successfully!');
+        },
+        error: function(xhr, status, error) {
+            // Handle the error response here (e.g., display an error message)
+            console.log('Error saving column details:', error);
+            alert('Error saving column details: ' + error);
+        }
+    });
+}
+
+// Attach the saveColumnDetails function to the submit button
+$('#save_columns').on('click', function(event) {
+    event.preventDefault();  // Prevent default form submission (if any)
+    saveColumnDetails();  // Call the function to save the column details
+});
+
+
+
+
+
+
+
+
+
+
+
+    function generateReport() {
+    // Prepare the data object to hold database name, tables, columns, and selected types
+    var reportData = {};
+
+    // Get the database name (you may need to update this to get it dynamically, if necessary)
+    var dbName = $('#db_select').val(); // Assuming you have a field for the database name
+
+    // Add database name to the report data
+    reportData.db_name = dbName;
+
+    // Iterate over the table sections
+    $('.table-section').each(function() {
+        var tableName = $(this).find('h5').text(); // Get the table name
+        var columns = {};
+
+        // Iterate over each column in the table section
+        $(this).find('.form-group').each(function() {
+            var columnName = $(this).find('label').first().text().replace(':', ''); // Get column name
+            var selectedTypes = [];
+
+            // Check which checkboxes are selected for this column
+            $(this).find('.form-check-input:checked').each(function() {
+                var typeValue = $(this).val();
+                selectedTypes.push(typeValue); // Add selected type to array
+            });
+
+            // If no checkboxes are selected, we don't need to include the column
+            if (selectedTypes.length > 0) {
+                // Add the column's selected types to the columns object
+                columns[columnName] = selectedTypes;
+            }
+        });
+
+        // If the table has any selected columns, add it to the reportData object
+        if (Object.keys(columns).length > 0) {
+            reportData[tableName] = columns;
+        }
+    });
+
+    // Send the gathered data via an AJAX request
+    $.ajax({
+        url: '/generate_report/',  // Replace with your Django view URL
+        type: 'POST',
+        data: {
+            report_data: JSON.stringify(reportData),  // Send the reportData object as a JSON string
+            csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()  // CSRF token for security
+        },
+        success: function(response) {
+            // Handle the server response here (e.g., display the report)
+            console.log('Report generated successfully:', response);
+        },
+        error: function(xhr, status, error) {
+            console.log('Error generating report:', error);
+        }
+    });
+}
+
+// Attach the generateReport function to the submit button
+$('#submit_btn').on('click', function(event) {
+    event.preventDefault();  // Prevent default form submission (if any)
+    generateReport();  // Call the function to generate the report
+});
+
+
+
+
+
+
+
+
+
+
+    // Collect selected columns and their conditions when the submit button is clicked
+    // $('#submit_btn').click(function() {
+    //     var selectedColumns = [];
+    //     var conditions = {};
+    //     var dbName = $('#db_select').val();  // Get the selected database name
+    //     var tableName = $('#table_select').val();  // Get the selected table name
+
+    //     // Get the selected columns and their conditions
+    //     $('input[name="columns"]:checked').each(function() {
+    //         var column = $(this).val();  // Get selected column name
+    //         selectedColumns.push(column);
+            
+    //     });
+
+    //     // Send the selected columns, conditions, db_name, and table_name to the backend
+    //     $.ajax({
+    //         url: '/generate_report/',  // Django view URL
+    //         type: 'POST',
+    //         data: {
+    //             'db_name': dbName,  // Send db_name
+    //             'table_name': tableName,  // Send table_name
+    //             'columns': selectedColumns,  // Send the selected columns
+    //             'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),  // CSRF token
+    //         },
+    //         success: function(response) {
+    //             $('#report_area').html(response.report);  // Display the generated report
+    //         },
+    //         error: function(xhr, status, error) {
+    //             console.error("Error: " + error);
+    //         }
+    //     });
+    // });
 
 
 

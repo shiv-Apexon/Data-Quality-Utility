@@ -194,12 +194,12 @@ def get_tables(request):
 # Function to get columns for a specific table in a database
 def get_columns(request):
     db_name = request.GET.get('db_name')
-    table_name = request.GET.get('table_name')
+    table_name = request.GET.getlist('table_name[]')
     db_config = request.session.get('db_config')
 
     engine = db_config['db_engine']
     columns = []
-
+    print("-----------------",db_name,table_name)
     if db_name and table_name and engine:
         try:
             if engine == "mysql":
@@ -210,31 +210,32 @@ def get_columns(request):
                 # Connect to MySQL database
                 conn = pymysql.connect(host=host, user=user, password=password, database=db_name)
                 cursor = conn.cursor()
-                cursor.execute(f"DESCRIBE {table_name}")
-                columns = [row[0] for row in cursor.fetchall()]
+                table_and_columns = {}
+
+                for table in table_name:
+                    try:
+                        # Execute the query to get the columns for the given table
+                        cursor.execute(f"SHOW COLUMNS FROM {table}")
+                        columns = [row[0] for row in cursor.fetchall()]  # Fetch column names
+                        
+                        # Save the column names for the current table in the dictionary
+                        table_and_columns[table] = columns
+                    except Exception as e:
+                        # If there is an error fetching the columns (e.g., table does not exist), handle it
+                        table_and_columns[table] = f"Error: {str(e)}"
+                
+                # Close the database connection
                 conn.close()
 
-            elif engine == "mssql":
-                host = db_config['host']
-                user = db_config['username']
-                password = db_config['password']
-                # Connect to MS SQL Server
-                conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};'
-                                      'SERVER={host};'
-                                      f'DATABASE={db_name};'
-                                      'UID={user};'
-                                      'PWD={password}')
-                cursor = conn.cursor()
-                cursor.execute(f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{table_name}'")
-                columns = [row[0] for row in cursor.fetchall()]
-                conn.close()
+                # Return the columns as a JSON response
+
 
             # Add other database engines here (PostgreSQL, SQLite, etc.) as needed.
 
         except Exception as e:
             print(f"Error fetching columns: {str(e)}")
 
-    return JsonResponse({'columns': columns})
+        return JsonResponse({'table_and_columns': table_and_columns})
 
 @csrf_exempt
 def close_connection(request):
@@ -276,6 +277,7 @@ def generate_report(request):
             db_name = request.POST.get('db_name')  # Get the database name
             table_name = request.POST.get('table_name')  # Get the table name
             selected_columns = request.POST.getlist('columns[]')  # Get selected columns
+            report_data = json.loads(request.POST.get('report_data'))
 
             host = db_config['host']
             user = db_config['username']
@@ -325,3 +327,68 @@ def generate_report(request):
 
             return JsonResponse({'report': render_to_string('QCA/report_template.html', {'report': report})})
         return JsonResponse({'error': 'Invalid request method'}, status=400)
+    
+def table_exists(table_name,db_config):
+    engine = db_config['db_engine']
+    if engine == 'mysql':
+            host = db_config['host']
+            user = db_config['username']
+            password = db_config['password']
+            db_name = db_config['db_name']
+
+            # Set the database connection (if necessary)
+            conn = pymysql.connect(host=host, user=user, password=password)
+            cursor = conn.cursor()
+            with conn.cursor() as cursor:
+                cursor.execute(f"USE {db_name};SHOW TABLES LIKE %s", [table_name])
+                result = cursor.fetchone()
+            return result is not None
+
+@csrf_exempt
+def save_column_details(request):
+     
+    if request.method == "POST":
+        db_config = request.session.get('db_config')
+        engine = db_config['db_engine']
+        if engine == 'mysql':
+
+            report_data = json.loads(request.POST.get('report_data'))
+            print("-----------------",report_data['db_name'])
+            db_name = report_data['db_name']
+
+            host = db_config['host']
+            user = db_config['username']
+            password = db_config['password']
+
+            # Set the database connection (if necessary)
+            conn = pymysql.connect(host=host, user=user, password=password)
+            cursor = conn.cursor()
+            cursor.execute(f"USE {db_name};")
+            try:
+                if not table_exists('column_details',db_config):
+                    with conn.cursor() as cursor:
+                        cursor.execute(f"""
+                            USE {db_name};
+                            CREATE TABLE column_details (
+                                sr_no INT PRIMARY KEY AUTO_INCREMENT,
+                                db_name VARCHAR(255) NOT NULL,
+                                table_name VARCHAR(255) NOT NULL,
+                                column_name VARCHAR(255) NOT NULL,
+                                column_type INT NOT NULL
+                            );
+                        """)
+                        print("Table 'column_details' created successfully.")
+                for table_name, columns in report_data.items():
+                        # Skip the 'db_name' key (we only want table data)
+                    if table_name == 'db_name':
+                        continue
+                    for column_name, column_types in columns.items():
+                        for column_type in column_types:
+                            cursor.execute("""
+                                    INSERT INTO column_details (db_name, table_name, column_name, column_type)
+                                    VALUES (%s, %s, %s, %s)
+                                """, [db_name, table_name, column_name, column_type])
+                    return JsonResponse({'message': 'Column details saved successfully!'})
+            except Exception as e:
+                # If there's an error while inserting, return the error message
+                return JsonResponse({'error': str(e)}, status=400)
