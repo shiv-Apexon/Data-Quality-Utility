@@ -338,6 +338,8 @@ $('#save_columns').on('click', function(event) {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()  // CSRF token for security
         },
         success: function(response) {
+            $('#report_area').html(response.report);
+
             // Handle the server response here (e.g., display the report)
             console.log('Report generated successfully:', response);
         },

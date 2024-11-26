@@ -13,6 +13,14 @@ from django.http import JsonResponse
 from django.db import connection
 from django.template.loader import render_to_string
 
+CHECK_TYPE_MAP = {
+    '1': 'NULL',
+    '2': 'STRING',
+    '3': 'NUMBER',
+    '4': 'DATE',
+    '5': 'BOOLEAN'
+}
+
 
 toaster = ToastNotifier()
 
@@ -199,7 +207,6 @@ def get_columns(request):
 
     engine = db_config['db_engine']
     columns = []
-    print("-----------------",db_name,table_name)
     if db_name and table_name and engine:
         try:
             if engine == "mysql":
@@ -273,74 +280,76 @@ def generate_report(request):
     if request.method == 'POST':
         db_config = request.session.get('db_config')
         engine = db_config['db_engine']
+        host = db_config['host']
+        user = db_config['username']
+        password = db_config['password']
+
         if engine == 'mysql':
-            db_name = request.POST.get('db_name')  # Get the database name
-            table_name = request.POST.get('table_name')  # Get the table name
-            selected_columns = request.POST.getlist('columns[]')  # Get selected columns
             report_data = json.loads(request.POST.get('report_data'))
+            print("-----input=-----",report_data)
 
-            host = db_config['host']
-            user = db_config['username']
-            password = db_config['password']
-
-            # Set the database connection (if necessary)
-            conn = pymysql.connect(host=host, user=user, password=password)
-            cursor = conn.cursor()
-            cursor.execute(f"USE {db_name};")  # Use the specified database
-
-            # Initialize the report dictionary
+            db_name = report_data['db_name']
             report = {}
+            for table_name, column_types in report_data.items():
+                if table_name == 'db_name':
+                    continue 
+                report[table_name]=[]
+                for column_name, checks in column_types.items():
+                    # Loop through each check type (the check type is a list, e.g., ["2", "3"])
+                    for check in checks:
+                        check_type = CHECK_TYPE_MAP.get(check)
+                        if check_type:
+                            # Generate the SQL query based on the check type
+                            sql = generate_check_query(db_name, table_name, column_name, check_type)
 
-            # Query each selected column with the conditions
-            for column in selected_columns:
+                            conn = pymysql.connect(host=host, user=user, password=password)
+                            with conn.cursor() as cursor:
+                                cursor.execute(sql)
+                                result = cursor.fetchone()
 
-                # Get the user-supplied condition for the column, if provided
-
-                # Default WHERE clause for null condition
-
-
-                # Prepare SQL queries for null, empty, and improper values
-                query_null = f"SELECT COUNT(*) FROM {table_name} WHERE {column} IS NULL;"
-                query_empty = f"SELECT COUNT(*) FROM {table_name} WHERE {column} = '';"
-                query_unique = f"SELECT COUNT(DISTINCT {column}) FROM {table_name} ;"
-
-
-                # Execute the queries and fetch counts
-                cursor.execute(query_null)
-                null_count = cursor.fetchone()[0]
-
-                cursor.execute(query_empty)
-                empty_count = cursor.fetchone()[0]
-
-                cursor.execute(query_unique)
-                unique_count = cursor.fetchone()[0]
-
-                # Add the result for the current column to the report
-                report[column] = {
-                    'null_count': null_count,
-                    'empty_count': empty_count,
-                    'unique_count': unique_count,
-                }
-            print("------------------------------------------------------")
-            print(report)
+                            if result:
+                                report[table_name].append({
+                                    'column_name': column_name,
+                                    'check_name': check_type,
+                                    'result': result[0]  # assuming result contains the check result
+                                })
+        print("-----output---",report)
+        return JsonResponse({'report': render_to_string('QCA/report_template.html', {'report': report})})
             # Render the report HTML using the template and return it as a JSON response
 
-            return JsonResponse({'report': render_to_string('QCA/report_template.html', {'report': report})})
-        return JsonResponse({'error': 'Invalid request method'}, status=400)
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+
+def generate_check_query(db_name, table_name, column_name, check_type):
+    if check_type == 'NULL':
+        return f"SELECT COUNT(*) FROM {db_name}.{table_name} WHERE {column_name} IS NULL"
+    elif check_type == 'STRING':
+        return f"SELECT COUNT(*) FROM {db_name}.{table_name} WHERE  {column_name} IS NOT NULL AND NOT {column_name} REGEXP '^[a-zA-Z]+$'"
+    elif check_type == 'NUMBER':
+        return f"SELECT COUNT(*) FROM {db_name}.{table_name} WHERE  {column_name} IS NOT NULL AND {column_name} NOT REGEXP '^[0-9]+$'"
     
-def table_exists(table_name,db_config):
+    elif check_type == 'DATE':
+        return f"SELECT COUNT(*) FROM {db_name}.{table_name} WHERE  {column_name} IS NOT NULL AND NOT {column_name} REGEXP '^\d{4}-\d{2}-\d{2}$'"
+    elif check_type == 'BOOLEAN':
+        return f"SELECT COUNT(*) FROM {db_name}.{table_name} WHERE  {column_name} IS NOT NULL AND {column_name} NOT IN ('true', 'false')"
+    else:
+        return ""
+    
+def table_exists(table_name,db_name,db_config):
     engine = db_config['db_engine']
     if engine == 'mysql':
             host = db_config['host']
             user = db_config['username']
             password = db_config['password']
-            db_name = db_config['db_name']
 
             # Set the database connection (if necessary)
             conn = pymysql.connect(host=host, user=user, password=password)
             cursor = conn.cursor()
             with conn.cursor() as cursor:
-                cursor.execute(f"USE {db_name};SHOW TABLES LIKE %s", [table_name])
+                cursor.execute(f"USE {db_name};")
+
+                cursor.execute(f"SHOW TABLES LIKE '{table_name}';")
                 result = cursor.fetchone()
             return result is not None
 
@@ -353,7 +362,6 @@ def save_column_details(request):
         if engine == 'mysql':
 
             report_data = json.loads(request.POST.get('report_data'))
-            print("-----------------",report_data['db_name'])
             db_name = report_data['db_name']
 
             host = db_config['host']
@@ -365,10 +373,9 @@ def save_column_details(request):
             cursor = conn.cursor()
             cursor.execute(f"USE {db_name};")
             try:
-                if not table_exists('column_details',db_config):
+                if not table_exists('column_details',db_name,db_config):
                     with conn.cursor() as cursor:
                         cursor.execute(f"""
-                            USE {db_name};
                             CREATE TABLE column_details (
                                 sr_no INT PRIMARY KEY AUTO_INCREMENT,
                                 db_name VARCHAR(255) NOT NULL,
@@ -377,17 +384,18 @@ def save_column_details(request):
                                 column_type INT NOT NULL
                             );
                         """)
-                        print("Table 'column_details' created successfully.")
                 for table_name, columns in report_data.items():
                         # Skip the 'db_name' key (we only want table data)
                     if table_name == 'db_name':
                         continue
                     for column_name, column_types in columns.items():
                         for column_type in column_types:
-                            cursor.execute("""
+                            cursor.execute(f"""
                                     INSERT INTO column_details (db_name, table_name, column_name, column_type)
-                                    VALUES (%s, %s, %s, %s)
-                                """, [db_name, table_name, column_name, column_type])
+                                    VALUES ('{db_name}', '{table_name}', '{column_name}', {column_type})
+                               """)
+                            conn.commit()
+
                     return JsonResponse({'message': 'Column details saved successfully!'})
             except Exception as e:
                 # If there's an error while inserting, return the error message
