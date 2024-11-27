@@ -50,7 +50,7 @@
 
         <!-- Columns Section (Initially Hidden) -->
         <div id="columns_section" style="display:none;">
-            <h5>Columns in the Selected Table:</h5>
+            <h3>Columns in the Selected Table:</h3>
             <div id="columns_list"></div>
         </div>
 
@@ -141,7 +141,7 @@
                         
                         // Assuming you want to dynamically display these in HTML
                         var tableSection = $('<div class="table-section" id="table_' + tableName + '">');
-                        tableSection.append('<hr><h5>' + tableName + '</h5><hr>');  // Add table name
+                        tableSection.append('<hr><h4>' + tableName + '</h4><hr>');  // Add table name
 
                         columns.forEach(function(column) {
                         var columnDiv = $('<div class="form-group">');
@@ -182,12 +182,12 @@
                                             BOOLEAN
                                         </label>
                                     </div>
-                                    <div class="form-check">
+                                    {% comment %} <div class="form-check">
                                         <input class="form-check-input" type="checkbox" value="6" id="timestamp_type">
                                         <label class="form-check-label" for="timestamp_type">
                                             TIMESTAMP
                                         </label>
-                                    </div>
+                                    </div> {% endcomment %}
                                 </div>
                             </div>
 
@@ -226,7 +226,7 @@
 
     // Iterate over the table sections
     $('.table-section').each(function() {
-        var tableName = $(this).find('h5').text(); // Get the table name
+        var tableName = $(this).find('h4').text(); // Get the table name
         var columns = {};
 
         // Iterate over each column in the table section
@@ -302,7 +302,7 @@ $('#save_columns').on('click', function(event) {
 
     // Iterate over the table sections
     $('.table-section').each(function() {
-        var tableName = $(this).find('h5').text(); // Get the table name
+        var tableName = $(this).find('h4').text(); // Get the table name
         var columns = {};
 
         // Iterate over each column in the table section

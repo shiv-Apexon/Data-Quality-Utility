@@ -329,12 +329,11 @@ def generate_report(request):
 
 def generate_check_query(db_name, table_name, column_name, check_type):
     if check_type == 'NULL':
-        return f"SELECT COUNT(*) FROM {db_name}.{table_name} WHERE {column_name} IS NULL"
+        return f"SELECT COUNT(*) FROM {db_name}.{table_name} WHERE {column_name} IS NULL OR {column_name} = '' "
     elif check_type == 'STRING':
         return f"SELECT COUNT(*) FROM {db_name}.{table_name} WHERE  {column_name} IS NOT NULL AND NOT {column_name} REGEXP '^[a-zA-Z]+$'"
     elif check_type == 'NUMBER':
         return f"SELECT COUNT(*) FROM {db_name}.{table_name} WHERE  {column_name} IS NOT NULL AND {column_name} NOT REGEXP '^[0-9]+$'"
-    
     elif check_type == 'DATE':
         return f"SELECT COUNT(*) FROM {db_name}.{table_name} WHERE  {column_name} IS NOT NULL AND NOT {column_name} REGEXP '^\d{4}-\d{2}-\d{2}$'"
     elif check_type == 'BOOLEAN':
