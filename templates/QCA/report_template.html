@@ -10,7 +10,7 @@
     <link href="https://getbootstrap.com/docs/5.2/assets/css/docs.css" rel="stylesheet" />
 </head>
 <body>
-    <div class="container my-4">
+    <div class="container mt-4">
         <h2>Data Quality Check Report</h2>
 
         {% if report %}
@@ -54,7 +54,7 @@
             </div>
         {% endif %}
     </div>
-        <div class="gap-3 d-flex mt-4 my-4 justify-content-between ">
+        <div class="container gap-3 d-flex justify-content-between">
             <div>
                 <a href="{% url 'db_info' %}" class="btn btn-primary mb-1">Go Back</a>
                 <button class="btn btn-primary mb-1 " id="closeModalBtn" onclick="document.getElementById('report_area').close(); document.getElementById('report_area').style.display = 'none';">Add More</button>    
