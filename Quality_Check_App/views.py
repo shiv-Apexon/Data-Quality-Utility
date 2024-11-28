@@ -55,7 +55,9 @@ def connect_db(request):
                         'host':host,
                         'username':username,
                         'password':password,
-                        'db_engine':db_engine
+                        'db_engine':db_engine,
+                        'db_name': None
+
                         }
                     message = "Successfully connected to the database!"
                     toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
@@ -85,7 +87,8 @@ def connect_db(request):
                         'host':host,
                         'username':username,
                         'password':password,
-                        'db_engine':db_engine
+                        'db_engine':db_engine,
+                        'db_name': None
                         }
 
                     message = "Successfully connected to the database!"
@@ -166,6 +169,8 @@ def db_info(request):
 def get_tables(request):
     db_name = request.GET.get('db_name')
     db_config = request.session.get('db_config')
+    db_config['db_name'] = db_name
+    request.session['db_config'] = db_config
     host = db_config['host']
     user = db_config['username']
     password = db_config['password']
@@ -360,6 +365,7 @@ def table_exists(table_name,db_name,db_config):
 
 @csrf_exempt
 def save_column_details(request):
+
      
     if request.method == "POST":
         db_config = request.session.get('db_config')
@@ -405,3 +411,87 @@ def save_column_details(request):
             except Exception as e:
                 # If there's an error while inserting, return the error message
                 return JsonResponse({'error': str(e)}, status=400)
+            
+
+
+@csrf_exempt
+def save_quality_check_report(request):
+    db_config = request.session.get('db_config')
+    engine = db_config['db_engine']
+    print("----------save qua dbconfi-------s",db_config)
+    if request.method == 'POST':
+        try:
+            if engine == "mysql":
+                db_host = db_config['host']
+                db_user = db_config['username']
+                db_password = db_config['password'] 
+                db_name = db_config['db_name']
+
+                report_data = json.loads(request.body)
+
+                report_name = report_data.get('name')
+                report_date = report_data.get('timestamp')
+
+                report_str = report_data.get('report')
+
+                # If report_str is a string that looks like JSON, parse it
+                # If it's not a valid JSON string, you may need to process it further (e.g., replace or clean)
+                report_str = report_str.replace('\\u0027', "'")
+
+    
+    
+
+                conn = pymysql.connect(host=db_host, user=db_user, password=db_password,database=db_name)
+                cursor = conn.cursor()
+
+
+                # Check if the table exists, if not, create it
+
+
+                # If the table does not exist, create it
+                istable_exists = table_exists('quality_checks_reports',db_name,db_config)
+                if not istable_exists:
+                    cursor.execute(f"""
+                        USE {db_name};
+                    """)
+                    cursor.execute("""
+                        CREATE TABLE quality_checks_reports (
+                            id SERIAL PRIMARY KEY,
+                            name VARCHAR(255) UNIQUE NOT NULL,
+                            report TEXT NOT NULL,
+                            date VARCHAR(255)
+                        );
+                    """)
+                    conn.commit()
+
+                # Check if a report with the same name already exists
+                cursor.execute("""
+                    SELECT id FROM quality_checks_reports WHERE name = %s;
+                """,(report_name))
+
+                existing_report = cursor.fetchone()
+
+                if existing_report:
+                    return JsonResponse({'message': 'Report with this name already exists.'}, status=400)
+
+                # Insert the new report into the table
+                cursor.execute("""
+                    INSERT INTO quality_checks_reports (name, report,date) VALUES (%s, %s,%s);
+                """, (report_name, report_str,report_date))
+
+                # Commit the transaction
+                conn.commit()
+
+                # Close the cursor and connection
+                cursor.close()
+                conn.close()
+
+                return JsonResponse({'message': 'Report saved successfully!'}, status=201)
+
+
+        except json.JSONDecodeError:
+                return JsonResponse({'message': 'Invalid JSON data.'}, status=400)
+        except Exception as e:
+                return JsonResponse({'message': f'Error: {str(e)}'}, status=500)
+
+    return JsonResponse({'message': 'Invalid request method.'}, status=405)
