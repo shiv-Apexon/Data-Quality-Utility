@@ -31,9 +31,12 @@
             height: clamp(200px, 89vh, 90vh);
             resize: both;
             overflow: auto;
-        }
+            padding: 5px;
+            border:none;
+            box-shadow: 0px 155px 62px rgba(0, 0, 0, 0.01), 0px 87px 52px rgba(0, 0, 0, 0.05), 0px 39px 39px rgba(0, 0, 0, 0.09), 0px 10px 21px rgba(0, 0, 0, 0.1), 0px 0px 0px rgba(0, 0, 0, 0.1);
+        }   
         dialog::backdrop{
-            background-color: rgba(0, 0, 0, 0.63); 
+            background-color: rgba(0, 0, 0, 0.45); 
             z-index: 1000;
         }        
     </style>
@@ -77,18 +80,12 @@
 
         </div>
     </div>
-    <dialog id="report_area">
-        <button class="btn btn-primary mb-1 position-absolute bottom-0 mb-3" id="closeModalBtn" onclick="document.getElementById('report_area').close(); document.getElementById('report_area').style.display = 'none';">Close</button>    
+    <dialog id="report_area">   
+        <button class="btn btn-primary position-absolute bottom-0 mb-3" id="closeModalBtn" onclick="document.getElementById('report_area').close(); document.getElementById('report_area').style.display = 'none';">Close</button>    
     </dialog>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-    const modal = document.getElementById('report_area');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-
-    closeModalBtn.addEventListener('click', () => {
-      modal.close();  // Close the modal
-    });
                 // Initialize Select2 for the dropdowns
         $(document).ready(function() {
             // Initialize Select2 on the select elements
@@ -174,12 +171,12 @@
                         // Create the dropdown button for column types
                         var dropdownHTML = `
                             <div class="mb-3">
-                                <label for="column_select" class="form-label">Select Column Types</label>
+                                <label for="column_select" class="form-label">Select Check Types</label>
                                 <div id="column_select">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" value="1" id="null_type">
                                         <label class="form-check-label" for="null_type">
-                                            NULL
+                                            NULL Values
                                         </label>
                                     </div>
                                     <div class="form-check">

@@ -14,11 +14,11 @@ from django.db import connection
 from django.template.loader import render_to_string
 
 CHECK_TYPE_MAP = {
-    '1': 'NULL',
-    '2': 'STRING',
-    '3': 'NUMBER',
-    '4': 'DATE',
-    '5': 'BOOLEAN'
+    '1': 'NULL Values',
+    '2': 'Not a String',
+    '3': 'Not a number',
+    '4': 'Not in Date Format',
+    '5': 'Not a Boolean'
 }
 
 
@@ -328,15 +328,15 @@ def generate_report(request):
 
 
 def generate_check_query(db_name, table_name, column_name, check_type):
-    if check_type == 'NULL':
+    if check_type == 'NULL Values':
         return f"SELECT COUNT(*) FROM {db_name}.{table_name} WHERE {column_name} IS NULL OR {column_name} = '' "
-    elif check_type == 'STRING':
+    elif check_type == 'Not a String':
         return f"SELECT COUNT(*) FROM {db_name}.{table_name} WHERE  {column_name} IS NOT NULL AND NOT {column_name} REGEXP '^[a-zA-Z]+$'"
-    elif check_type == 'NUMBER':
-        return f"SELECT COUNT(*) FROM {db_name}.{table_name} WHERE  {column_name} IS NOT NULL AND {column_name} NOT REGEXP '^[0-9]+$'"
-    elif check_type == 'DATE':
+    elif check_type == 'Not a number':
+        return f"SELECT COUNT(*) FROM {db_name}.{table_name} WHERE  {column_name} IS NOT NULL AND NOT {column_name} REGEXP '^[0-9]+$'"
+    elif check_type == 'Not in Date Format':
         return f"SELECT COUNT(*) FROM {db_name}.{table_name} WHERE  {column_name} IS NOT NULL AND NOT {column_name} REGEXP '^\d{4}-\d{2}-\d{2}$'"
-    elif check_type == 'BOOLEAN':
+    elif check_type == 'Not a Boolean':
         return f"SELECT COUNT(*) FROM {db_name}.{table_name} WHERE  {column_name} IS NOT NULL AND {column_name} NOT IN ('true', 'false')"
     else:
         return ""
