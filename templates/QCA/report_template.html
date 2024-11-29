@@ -11,7 +11,7 @@
 </head>
 <body>
     <div class="container mt-4">
-        <h2 class="text-center mb-2">Data Quality Check Report</h2>
+        <h2 class="text-center my-3">Data Quality Check Report</h2>
 
         {% if report %}
                     
@@ -39,9 +39,9 @@
                         {% endfor %}
                     </tbody>
                 </table>
-                <div>
-                    <label for="report name">Give Name to Report:</label>
-                    <input type="text" id="report_name" class="input m-1 ">
+                <div class="input-group my-3">
+                    <label for="report name" class="input-group-text">Enter Report Name to Save:</label>
+                    <input type="text" id="report_name" class="form-control " onchange="">
                 </div>
             </div>
         {% else %}
@@ -53,26 +53,54 @@
                     </path>
                 </svg>
                 <div class="d-flex">
-                    No data quality checks available.
+                    No data quality checks available. Select the Database and Tables
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             </div>
-        {% endif %}
     </div>
-        <div class="container gap-3 d-flex justify-content-between">
+        {% endif %}
+        <div class="gap-3 d-flex justify-content-between">
             <div>
                 <a href="{% url 'db_info' %}" class="btn btn-primary mb-1">Go Back</a>
                 <button class="btn btn-primary mb-1 " id="closeModalBtn" onclick="document.getElementById('report_area').close(); document.getElementById('report_area').style.display = 'none';">Add More</button>    
             </div>
+        {% if report %}
             <div>                
-                <button class="btn btn-primary mb-1" id="closeModalBtn" onclick="saveReport()">Save Report</button>    
-                <button class="btn btn-primary mb-1" id="closeModalBtn" onclick="">Download</button>    
+                <button class="btn btn-primary mb-1 " id="save_report_btn" onclick="saveReport()" >Save Report</button>    
+                <button class="btn btn-primary mb-1" id="download_report_btn" onclick="">Download</button>    
             </div>
-    
+        {% endif %}
         </div>
+
+        {% if report %}
+
+        {% else %}
+        <div class="text-center">
+            <img src="/static/src/report.png" class="mx-auto" style="height: 50vh; width: auto; " alt=" ">
+        </div>
+        {% endif %}
+
     <!-- Bootstrap JS (optional for certain components) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" ></script>
     <script>
+        const myInput = document.getElementById('report_name');
+        const myButton = document.getElementById('save_report_btn');
+
+        // Function to enable or disable the button based on input text
+        function toggleButtonState() {
+            if (myInput.value.trim() !== "") {
+            myButton.disabled = false;  // Enable button if input has text
+            } else {
+            myButton.disabled = true;   // Disable button if input is empty
+            }
+        }
+
+        // Add event listener to input field to trigger the toggle function
+        myInput.addEventListener('input', toggleButtonState);
+
+        // Initial check in case the input field has pre-filled text (e.g., in form submission)
+        toggleButtonState();
+
         function saveReport() {
             var reportData = document.getElementById('report-container').getAttribute('data-report');
 
