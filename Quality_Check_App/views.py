@@ -215,7 +215,10 @@ def get_columns(request):
     db_name = request.GET.get('db_name')
     table_name = request.GET.getlist('table_name[]')
     db_config = request.session.get('db_config')
-
+    if table_name == []:
+        response = get_tables(request)
+        data = json.loads(response.content)  # Convert JSON string to Python dict
+        table_name = data.get('tables', [])     
     engine = db_config['db_engine']
     columns = []
     if db_name and table_name and engine:
@@ -252,7 +255,7 @@ def get_columns(request):
 
         except Exception as e:
             print(f"Error fetching columns: {str(e)}")
-
+        print("---tables and columns--",table_and_columns)
         return JsonResponse({'table_and_columns': table_and_columns})
 
 @csrf_exempt
@@ -395,10 +398,17 @@ def save_column_details(request):
                                 column_type INT NOT NULL
                             );
                         """)
+
                 for table_name, columns in report_data.items():
                         # Skip the 'db_name' key (we only want table data)
                     if table_name == 'db_name':
                         continue
+                    cursor.execute("""
+                            DELETE FROM column_details 
+                            WHERE db_name = %s AND table_name = %s
+                        """, [db_name, table_name])
+                    conn.commit()
+
                     for column_name, column_types in columns.items():
                         for column_type in column_types:
                             cursor.execute(f"""
@@ -495,3 +505,53 @@ def save_quality_check_report(request):
                 return JsonResponse({'message': f'Error: {str(e)}'}, status=500)
 
     return JsonResponse({'message': 'Invalid request method.'}, status=405)
+
+
+
+@csrf_exempt
+def get_saved_details(request):
+    db_config = request.session.get('db_config')
+    engine = db_config['db_engine']
+    db_table = request.GET.get('db_table')
+    if request.method == 'GET':
+        try:
+            if engine == "mysql":
+                db_host = db_config['host']
+                db_user = db_config['username']
+                db_password = db_config['password'] 
+                db_name = db_config['db_name']
+
+                conn = pymysql.connect(host=db_host, user=db_user, password=db_password,database=db_name)
+                cursor = conn.cursor()
+
+                istable_exists = table_exists('column_details',db_name,db_config)
+                if istable_exists:
+                    with conn.cursor() as cursor:
+                        cursor.execute("""
+                                SELECT table_name,column_name, column_type 
+                                FROM column_details
+                                WHERE db_name = %s
+                            """, [db_name])
+        
+                        rows = cursor.fetchall()  
+
+                        saved_details = {}
+
+                        for row in rows:
+                            db_table, column_name, value = row
+                            if db_table not in saved_details:
+                                saved_details[db_table] = {}
+
+                            # Check if the column_name already exists, if not, initialize an empty list
+                            if column_name not in saved_details[db_table]:
+                                saved_details[db_table][column_name] = []
+
+                            # Add the value to the appropriate list, ensuring it's not duplicated
+                            if value not in saved_details[db_table][column_name]:
+                                saved_details[db_table][column_name].append(str(value))
+
+
+                print("-------------------------------",saved_details)
+                return JsonResponse({'saved_details':saved_details})
+        except:
+            pass

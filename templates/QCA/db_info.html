@@ -119,7 +119,7 @@
                             tables.forEach(function(table) {
                                 $('#table_select').append('<option value="' + table + '">' + table + '</option>');
                             });
-                            
+
                             // Initialize or re-initialize Select2 for the multi-select
                             $('#table_select').select2(); // Ensure it works after dynamically adding options
                         }
@@ -135,6 +135,154 @@
                 $('#columns_section').hide();
             }
         });
+
+
+        // // Function to fetch columns for the selected database
+        // function fetchColumnsForTables(dbName) {
+        //     // Fetch columns for the selected database
+        //     $.ajax({
+        //         url: "{% url 'get_columns' %}", // URL to fetch columns and tables
+        //         type: "GET",
+        //         data: { 'db_name': dbName ,
+        //                 'table_name': [] }, // Send selected table names as an array
+        //         success: function(data) {
+        //             // data contains the list of tables and columns (structure: { "table_name": ["column1", "column2"] })
+        //             var tables = data.table_and_columns; // Assuming response is in the form { "tables": { "employee_details": ["empid", "age", "gender", ...] } }
+        //             console.log(tables)
+        //             // Clear the previous columns list section
+        //             $('#columns_list').html('');
+
+        //             // Loop through each table and its columns
+        //             for (var tableName in tables) {
+        //                 var columns = tables[tableName];
+        //                 console.log(columns)
+
+        //                 // Create a section for the table
+        //                 var tableSection = $('<div class="table-section" id="table_' + tableName + '">');
+        //                 tableSection.append('<hr><h4>' + tableName + '</h4><hr>'); // Add table name header
+
+        //                 // Loop through columns in the table
+        //                 columns.forEach(function(column) {
+        //                     var columnDiv = $('<div class="form-group">');
+        //                     columnDiv.append('<label style="font-weight: 600">' + column + ':</label>');
+        //                     get
+        //                     // Create the dropdown for column types with checkboxes
+        //                     var dropdownHTML = `
+        //                         <div class="mb-3">
+        //                             <label for="column_select" class="form-label">Select Check Types</label>
+        //                             <div id="column_select">
+        //                                 <div class="form-check">
+        //                                     <input class="form-check-input" type="checkbox" value="1" id="null_type_${tableName}_${column}">
+        //                                     <label class="form-check-label" for="null_type_${tableName}_${column}">
+        //                                         NULL Values
+        //                                     </label>
+        //                                 </div>
+        //                                 <div class="form-check">
+        //                                     <input class="form-check-input" type="checkbox" value="2" id="string_type_${tableName}_${column}">
+        //                                     <label class="form-check-label" for="string_type_${tableName}_${column}">
+        //                                         STRING
+        //                                     </label>
+        //                                 </div>
+        //                                 <div class="form-check">
+        //                                     <input class="form-check-input" type="checkbox" value="3" id="number_type_${tableName}_${column}">
+        //                                     <label class="form-check-label" for="number_type_${tableName}_${column}">
+        //                                         NUMBER
+        //                                     </label>
+        //                                 </div>
+        //                                 <div class="form-check">
+        //                                     <input class="form-check-input" type="checkbox" value="4" id="date_type_${tableName}_${column}">
+        //                                     <label class="form-check-label" for="date_type_${tableName}_${column}">
+        //                                         DATE
+        //                                     </label>
+        //                                 </div>
+        //                                 <div class="form-check">
+        //                                     <input class="form-check-input" type="checkbox" value="5" id="boolean_type_${tableName}_${column}">
+        //                                     <label class="form-check-label" for="boolean_type_${tableName}_${column}">
+        //                                         BOOLEAN
+        //                                     </label>
+        //                                 </div>
+
+        //                             </div>
+        //                         </div>
+        //                     `;
+
+        //                     // Append the dropdown to the column div
+        //                     columnDiv.append(dropdownHTML);
+
+        //                     // Now, call `get_saved_details` to get the selected checkboxes for this table and column
+        //                     getSavedDetails(dbName, tableName, column, columnDiv);
+        //                     console.log("Executed");
+
+
+        //                     // Append the column div to the table section
+        //                     tableSection.append(columnDiv);
+        //                 });
+
+        //                 // Append the table section to the columns list section in the HTML
+        //                 $('#columns_list').append(tableSection);
+        //             }
+        //         },
+        //         error: function(error) {
+        //             console.log("Error fetching columns: ", error);
+        //         }
+        //     });
+        // }
+
+        // Function to fetch the saved details and apply checked attribute to checkboxes
+        function getSavedDetails(dbName, tableName, column, columnDiv) {
+            // Fetch saved details for the selected database (this should include the selected checkboxes)
+            console.log("Called get saved details")
+            $.ajax({
+                url: "{% url 'get_saved_details' %}", // URL to fetch saved checkboxes selections
+                type: "GET",
+                data: { 'db_name': dbName ,
+                    'db_table':tableName
+                }, // Send database name to fetch saved selections
+                success: function(data) {
+
+                    console.log(Object.keys(data.saved_details),tableName)
+                    if (Object.keys(data.saved_details).includes(tableName)){
+
+                    
+
+                    var selectedValues = data.saved_details[tableName][column]; 
+                    if (selectedValues != undefined){
+
+                    // Get the selected checkbox values for this column
+                    console.log("---------------------------------------------")
+                    console.log(selectedValues)
+                    console.log("---------------------------------------------")
+
+                    // Loop through the selected values and check the corresponding checkboxes
+                    selectedValues.forEach(function(value) {
+                        switch (value) {
+                            case "1":
+                                $('#null_type_' + tableName + '_' + column).prop('checked', true);
+                                break;
+                            case "2":
+                                $('#string_type_' + tableName + '_' + column).prop('checked', true);
+                                break;
+                            case "3":
+                                $('#number_type_' + tableName + '_' + column).prop('checked', true);
+                                break;
+                            case "4":
+                                $('#date_type_' + tableName + '_' + column).prop('checked', true);
+                                break;
+                            case "5":
+                                $('#boolean_type_' + tableName + '_' + column).prop('checked', true);
+                                break;
+                            // Add more cases as needed for other check types
+                        }
+                    });
+                }}}
+                ,
+                error: function(error) {
+                    console.log("Error fetching saved details: ", error);
+                }
+            });
+        }
+
+
 
 
 
@@ -167,52 +315,46 @@
                         columns.forEach(function(column) {
                         var columnDiv = $('<div class="form-group">');
                         columnDiv.append('<label style = "font-weight: 600">' + column + ':</label>');
-
+                        getSavedDetails(dbName, tableName, column, columnDiv)
                         // Create the dropdown button for column types
                         var dropdownHTML = `
-                            <div class="mb-3">
-                                <label for="column_select" class="form-label">Select Check Types</label>
-                                <div id="column_select">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="1" id="null_type">
-                                        <label class="form-check-label" for="null_type">
-                                            NULL Values
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="2" id="string_type">
-                                        <label class="form-check-label" for="string_type">
-                                            STRING
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="3" id="number_type">
-                                        <label class="form-check-label" for="number_type">
-                                            NUMBER
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="4" id="date_type">
-                                        <label class="form-check-label" for="date_type">
-                                            DATE
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="5" id="boolean_type">
-                                        <label class="form-check-label" for="boolean_type">
-                                            BOOLEAN
-                                        </label>
-                                    </div>
-                                    {% comment %} <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="6" id="timestamp_type">
-                                        <label class="form-check-label" for="timestamp_type">
-                                            TIMESTAMP
-                                        </label>
-                                    </div> {% endcomment %}
-                                </div>
-                            </div>
+                                <div class="mb-3">
+                                    <label for="column_select" class="form-label">Select Check Types</label>
+                                    <div id="column_select">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="1" id="null_type_${tableName}_${column}">
+                                            <label class="form-check-label" for="null_type_${tableName}_${column}">
+                                                NULL Values
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="2" id="string_type_${tableName}_${column}">
+                                            <label class="form-check-label" for="string_type_${tableName}_${column}">
+                                                STRING
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="3" id="number_type_${tableName}_${column}">
+                                            <label class="form-check-label" for="number_type_${tableName}_${column}">
+                                                NUMBER
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="4" id="date_type_${tableName}_${column}">
+                                            <label class="form-check-label" for="date_type_${tableName}_${column}">
+                                                DATE
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="5" id="boolean_type_${tableName}_${column}">
+                                            <label class="form-check-label" for="boolean_type_${tableName}_${column}">
+                                                BOOLEAN
+                                            </label>
+                                        </div>
 
-                        `;
+                                    </div>
+                                </div>
+                            `;
                         
                         // Append the dropdown to the column div
                         columnDiv.append(dropdownHTML);
@@ -223,6 +365,7 @@
 
                         $('#columns_list').append(tableSection);  // Append the table section to the DOM
                     }
+
                 },
                 error: function(error) {
                     console.log("Error fetching columns:", error);
