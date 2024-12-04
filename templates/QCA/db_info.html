@@ -73,6 +73,8 @@
             <div id="columns_list"></div>
         </div>
 
+        
+
         <!-- Submit Button (Initially Disabled) -->
         <div class="mt-3">
             <button type="submit" class="btn btn-primary" id="submit_btn"  onclick="document.getElementById('report_area').style.display = 'block'; document.getElementById('report_area').showModal();">Generate Report</button>
@@ -137,150 +139,65 @@
         });
 
 
-        // // Function to fetch columns for the selected database
-        // function fetchColumnsForTables(dbName) {
-        //     // Fetch columns for the selected database
-        //     $.ajax({
-        //         url: "{% url 'get_columns' %}", // URL to fetch columns and tables
-        //         type: "GET",
-        //         data: { 'db_name': dbName ,
-        //                 'table_name': [] }, // Send selected table names as an array
-        //         success: function(data) {
-        //             // data contains the list of tables and columns (structure: { "table_name": ["column1", "column2"] })
-        //             var tables = data.table_and_columns; // Assuming response is in the form { "tables": { "employee_details": ["empid", "age", "gender", ...] } }
-        //             console.log(tables)
-        //             // Clear the previous columns list section
-        //             $('#columns_list').html('');
 
-        //             // Loop through each table and its columns
-        //             for (var tableName in tables) {
-        //                 var columns = tables[tableName];
-        //                 console.log(columns)
+        function getSavedDetails(dbName, tableName, column) {
+    // Fetch saved details for the selected database (this should include the selected checkboxes)
+            console.log("Called get saved details");
 
-        //                 // Create a section for the table
-        //                 var tableSection = $('<div class="table-section" id="table_' + tableName + '">');
-        //                 tableSection.append('<hr><h4>' + tableName + '</h4><hr>'); // Add table name header
-
-        //                 // Loop through columns in the table
-        //                 columns.forEach(function(column) {
-        //                     var columnDiv = $('<div class="form-group">');
-        //                     columnDiv.append('<label style="font-weight: 600">' + column + ':</label>');
-        //                     get
-        //                     // Create the dropdown for column types with checkboxes
-        //                     var dropdownHTML = `
-        //                         <div class="mb-3">
-        //                             <label for="column_select" class="form-label">Select Check Types</label>
-        //                             <div id="column_select">
-        //                                 <div class="form-check">
-        //                                     <input class="form-check-input" type="checkbox" value="1" id="null_type_${tableName}_${column}">
-        //                                     <label class="form-check-label" for="null_type_${tableName}_${column}">
-        //                                         NULL Values
-        //                                     </label>
-        //                                 </div>
-        //                                 <div class="form-check">
-        //                                     <input class="form-check-input" type="checkbox" value="2" id="string_type_${tableName}_${column}">
-        //                                     <label class="form-check-label" for="string_type_${tableName}_${column}">
-        //                                         STRING
-        //                                     </label>
-        //                                 </div>
-        //                                 <div class="form-check">
-        //                                     <input class="form-check-input" type="checkbox" value="3" id="number_type_${tableName}_${column}">
-        //                                     <label class="form-check-label" for="number_type_${tableName}_${column}">
-        //                                         NUMBER
-        //                                     </label>
-        //                                 </div>
-        //                                 <div class="form-check">
-        //                                     <input class="form-check-input" type="checkbox" value="4" id="date_type_${tableName}_${column}">
-        //                                     <label class="form-check-label" for="date_type_${tableName}_${column}">
-        //                                         DATE
-        //                                     </label>
-        //                                 </div>
-        //                                 <div class="form-check">
-        //                                     <input class="form-check-input" type="checkbox" value="5" id="boolean_type_${tableName}_${column}">
-        //                                     <label class="form-check-label" for="boolean_type_${tableName}_${column}">
-        //                                         BOOLEAN
-        //                                     </label>
-        //                                 </div>
-
-        //                             </div>
-        //                         </div>
-        //                     `;
-
-        //                     // Append the dropdown to the column div
-        //                     columnDiv.append(dropdownHTML);
-
-        //                     // Now, call `get_saved_details` to get the selected checkboxes for this table and column
-        //                     getSavedDetails(dbName, tableName, column, columnDiv);
-        //                     console.log("Executed");
-
-
-        //                     // Append the column div to the table section
-        //                     tableSection.append(columnDiv);
-        //                 });
-
-        //                 // Append the table section to the columns list section in the HTML
-        //                 $('#columns_list').append(tableSection);
-        //             }
-        //         },
-        //         error: function(error) {
-        //             console.log("Error fetching columns: ", error);
-        //         }
-        //     });
-        // }
-
-        // Function to fetch the saved details and apply checked attribute to checkboxes
-        function getSavedDetails(dbName, tableName, column, columnDiv) {
-            // Fetch saved details for the selected database (this should include the selected checkboxes)
-            console.log("Called get saved details")
             $.ajax({
                 url: "{% url 'get_saved_details' %}", // URL to fetch saved checkboxes selections
                 type: "GET",
-                data: { 'db_name': dbName ,
-                    'db_table':tableName
-                }, // Send database name to fetch saved selections
+                data: { 
+                    'db_name': dbName,  // Send database name to fetch saved selections
+                    'db_table': tableName  // Send table name to fetch saved selections
+                },
                 success: function(data) {
+                // Loop through all the tables in saved_details
+                for (var tableName in data.saved_details) {
+                    if (data.saved_details.hasOwnProperty(tableName)) {
+                        // Loop through each column in the current table
+                        for (var column in data.saved_details[tableName]) {
+                            var selectedValues = data.saved_details[tableName][column];
+                            console.log("----------", selectedValues);
+                            
+                            if (selectedValues != undefined) {
+                                console.log("---------------------------------------------");
+                                console.log(selectedValues);
+                                console.log("---------------------------------------------");
 
-                    console.log(Object.keys(data.saved_details),tableName)
-                    if (Object.keys(data.saved_details).includes(tableName)){
-
-                    
-
-                    var selectedValues = data.saved_details[tableName][column]; 
-                    if (selectedValues != undefined){
-
-                    // Get the selected checkbox values for this column
-                    console.log("---------------------------------------------")
-                    console.log(selectedValues)
-                    console.log("---------------------------------------------")
-
-                    // Loop through the selected values and check the corresponding checkboxes
-                    selectedValues.forEach(function(value) {
-                        switch (value) {
-                            case "1":
-                                $('#null_type_' + tableName + '_' + column).prop('checked', true);
-                                break;
-                            case "2":
-                                $('#string_type_' + tableName + '_' + column).prop('checked', true);
-                                break;
-                            case "3":
-                                $('#number_type_' + tableName + '_' + column).prop('checked', true);
-                                break;
-                            case "4":
-                                $('#date_type_' + tableName + '_' + column).prop('checked', true);
-                                break;
-                            case "5":
-                                $('#boolean_type_' + tableName + '_' + column).prop('checked', true);
-                                break;
-                            // Add more cases as needed for other check types
+                                // Loop through the selected values and check the corresponding checkboxes
+                                selectedValues.forEach(function(value) {
+                                    switch (value) {
+                                        case "NULL":
+                                            $('#null_type_' + tableName + '_' + column).prop('checked', true);
+                                            break;
+                                        case "STRING":
+                                            $('#string_type_' + tableName + '_' + column).prop('checked', true);
+                                            break;
+                                        case "NUMBER":
+                                            $('#number_type_' + tableName + '_' + column).prop('checked', true);
+                                            break;
+                                        case "DATE":
+                                            $('#date_type_' + tableName + '_' + column).prop('checked', true);
+                                            break;
+                                        case "BOOLEAN":
+                                            $('#boolean_type_' + tableName + '_' + column).prop('checked', true);
+                                            break;
+                                        // Add more cases if other types are present
+                                    }
+                                });
+                            }
                         }
-                    });
-                }}}
-                ,
-                error: function(error) {
-                    console.log("Error fetching saved details: ", error);
+                    }
                 }
+            },
+            error: function(error) {
+                console.log("Error fetching saved details: ", error);
+            }
+
             });
         }
+
 
 
 
@@ -294,167 +211,183 @@
         if (selectedTables.length > 0) {
             $('#columns_section').show();
             $('#columns_list').html('');
+            // Example AJAX request with response data in the format you shared
             $.ajax({
-                url: "{% url 'get_columns' %}",  // URL to your Django view
+                url: "{% url 'get_columns_and_types' %}",  // URL to your Django view
                 type: "GET",
                 data: {
                     'db_name': dbName,
-                    'table_name': selectedTables  // Send selected table names as an array
+                    'table_name[]': selectedTables  // Send selected table names as an array
                 },
                 success: function(data) {
                     var tableAndColumns = data.table_and_columns;  // Get the table and columns data
-                    console.log(tableAndColumns)
-                    // Loop through each table and display its columns (handle this as needed)
+                    console.log(tableAndColumns);
+
+                    // Loop through each table (e.g., 'column_types', 'employee_details')
                     for (var tableName in tableAndColumns) {
-                        var columns = tableAndColumns[tableName];
+                        var tableData = tableAndColumns[tableName];
                         
-                        // Assuming you want to dynamically display these in HTML
+                        // Create a new table container for each table
                         var tableSection = $('<div class="table-section" id="table_' + tableName + '">');
                         tableSection.append('<hr><h4>' + tableName + '</h4><hr>');  // Add table name
 
-                        columns.forEach(function(column) {
-                        var columnDiv = $('<div class="form-group">');
-                        columnDiv.append('<label style = "font-weight: 600">' + column + ':</label>');
-                        getSavedDetails(dbName, tableName, column, columnDiv)
-                        // Create the dropdown button for column types
-                        var dropdownHTML = `
-                                <div class="mb-3">
-                                    <label for="column_select" class="form-label">Select Check Types</label>
-                                    <div id="column_select">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="1" id="null_type_${tableName}_${column}">
-                                            <label class="form-check-label" for="null_type_${tableName}_${column}">
-                                                NULL Values
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="2" id="string_type_${tableName}_${column}">
-                                            <label class="form-check-label" for="string_type_${tableName}_${column}">
-                                                STRING
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="3" id="number_type_${tableName}_${column}">
-                                            <label class="form-check-label" for="number_type_${tableName}_${column}">
-                                                NUMBER
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="4" id="date_type_${tableName}_${column}">
-                                            <label class="form-check-label" for="date_type_${tableName}_${column}">
-                                                DATE
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="5" id="boolean_type_${tableName}_${column}">
-                                            <label class="form-check-label" for="boolean_type_${tableName}_${column}">
-                                                BOOLEAN
-                                            </label>
-                                        </div>
-
-                                    </div>
-                                </div>
-                            `;
+                        // Create the table and its header
+                        var table = $('<table>').addClass('table');
+                        var thead = $('<thead>').append('<tr>');
                         
-                        // Append the dropdown to the column div
-                        columnDiv.append(dropdownHTML);
+                        // Add the check name headings to the table
+                        var headings = ['Column Name', 'Data Type', 'NULL Values', 'STRING', 'NUMBER', 'DATE', 'BOOLEAN'];
+                        headings.forEach(function(heading) {
+                            thead.append(`<th>${heading}</th>`);
+                        });
+                        
+                        table.append(thead);
+                        var tbody = $('<tbody>');  // Table body for columns
 
-                        // Append the column div to the table section
-                        tableSection.append(columnDiv);
-                    });
+                        // Loop through each column and create a row with checkboxes
+                        for (var column in tableData) {
+                            var enabledChecksForColumn = tableData[column]['valid_types'];  // Get the enabled checks for this column
+                            console.log("enabledChecksForColumn",enabledChecksForColumn)
+                            var row = $('<tr>');
+                            
+                            // Add the column name as the first cell
+                            row.append(`<td>${column}</td>`);
 
-                        $('#columns_list').append(tableSection);  // Append the table section to the DOM
+                            // Add the datatype as the second cell
+                            var dataType = 'Unknown';  // Default value
+                            // Assuming 'datatype' is a key in the backend data for each column (if available)
+                            if (tableData[column]['data_type']) {
+                                dataType = tableData[column]['data_type'];  // If 'datatype' is available, use it
+                            }
+                            row.append(`<td>${dataType}</td>`);
+
+                            // Add the checkboxes for each data type in the following cells
+                            var checkboxesHTML = '';
+                            var headingsMapping = {
+                                'NULL Values': 'NULL',
+                                'STRING': 'STRING',
+                                'NUMBER': 'NUMBER',
+                                'DATE': 'DATE',
+                                'BOOLEAN': 'BOOLEAN'
+                            };
+
+                            // Add checkboxes for each type (NULL, STRING, NUMBER, etc.)
+                            for (var heading in headingsMapping) {
+                                var checkType = headingsMapping[heading];
+                                var checkboxId = `${checkType.toLowerCase()}_type_${tableName}_${column}`;
+                                var isEnabled = enabledChecksForColumn.includes(checkType);  // Check if the heading is enabled for this column
+                                
+                                checkboxesHTML += `
+                                    <td>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="${checkType}" id="${checkboxId}" ${isEnabled ? '' : 'disabled'}>
+                                        </div>
+                                    </td>
+                                `;
+                            }
+
+                            // Append the checkboxes to the row
+                            row.append(checkboxesHTML);
+
+                            // Append the row to the table body
+                            tbody.append(row);
+                        }
+
+                        // Append the table body to the table
+                        table.append(tbody);
+                        
+                        // Append the table to the table section
+                        tableSection.append(table);
+
+                        // Append the table section to the DOM
+                        $('#columns_list').append(tableSection);
                     }
-
+                    getSavedDetails(dbName, tableName, column);  // Call saved details function
                 },
                 error: function(error) {
                     console.log("Error fetching columns:", error);
                 }
             });
-        }
-    });
+
+    }});
 
 
 
 
 
-    function saveColumnDetails() {
-    // Prepare the data object to hold database name, tables, columns, and selected types
-    var reportData = {};
 
-    // Get the database name (you may need to update this to get it dynamically, if necessary)
-    var dbName = $('#db_select').val(); // Assuming you have a field for the database name
+        function saveColumnDetails() {
+        // Prepare the data object to hold database name, tables, columns, and selected types
+        var reportData = {};
 
-    // Add database name to the report data
-    reportData.db_name = dbName;
+        // Get the database name (you may need to update this to get it dynamically, if necessary)
+        var dbName = $('#db_select').val(); // Assuming you have a field for the database name
 
-    // Iterate over the table sections
-    $('.table-section').each(function() {
-        var tableName = $(this).find('h4').text(); // Get the table name
-        var columns = {};
+        // Add database name to the report data
+        reportData.db_name = dbName;
 
-        // Iterate over each column in the table section
-        $(this).find('.form-group').each(function() {
-            var columnName = $(this).find('label').first().text().replace(':', ''); // Get column name
-            var selectedTypes = [];
+        // Iterate over the table sections
+        $('.table-section').each(function() {
+            var tableName = $(this).find('h4').text(); // Get the table name
+            var columns = {};
 
-            // Check which checkboxes are selected for this column
-            $(this).find('.form-check-input:checked').each(function() {
-                var typeValue = $(this).val();
-                selectedTypes.push(typeValue); // Add selected type to array
+            // Iterate over each column in the table section
+            $(this).find('table tbody tr').each(function() {
+                var columnName = $(this).find('td:first').text(); // Get column name (first cell)
+                var selectedTypes = [];
+
+                // Check which checkboxes are selected for this column
+                $(this).find('.form-check-input:checked').each(function() {
+                    var typeValue = $(this).val(); // Get the value of the checked checkbox
+                    selectedTypes.push(typeValue); // Add selected type to array
+                });
+
+                // If no checkboxes are selected, we don't need to include the column
+                if (selectedTypes.length > 0) {
+                    // Add the column's selected types to the columns object
+                    columns[columnName] = selectedTypes;
+                }
             });
 
-            // If no checkboxes are selected, we don't need to include the column
-            if (selectedTypes.length > 0) {
-                // Add the column's selected types to the columns object
-                columns[columnName] = selectedTypes;
+            // If the table has any selected columns, add it to the reportData object
+            if (Object.keys(columns).length > 0) {
+                reportData[tableName] = columns;
             }
         });
 
-        // If the table has any selected columns, add it to the reportData object
-        if (Object.keys(columns).length > 0) {
-            reportData[tableName] = columns;
-        }
+        // Send the gathered data via an AJAX request
+        $.ajax({
+            url: '/save_column_details/',  // Your Django view URL for saving the column details
+            type: 'POST',
+            data: {
+                report_data: JSON.stringify(reportData),  // Send the reportData object as a JSON string
+                csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()  // CSRF token for security
+            },
+            success: function(response) {
+                // Handle the server response here (e.g., display a success message)
+                console.log('Column details saved successfully:', response);
+                alert('Column details saved successfully!');
+            },
+            error: function(xhr, status, error) {
+                // Handle the error response here (e.g., display an error message)
+                console.log('Error saving column details:', error);
+                alert('Error saving column details: ' + error);
+            }
+        });
+    }
+
+    // Attach the saveColumnDetails function to the submit button
+    $('#save_columns').on('click', function(event) {
+        event.preventDefault();  // Prevent default form submission (if any)
+        saveColumnDetails();  // Call the function to save the column details
     });
 
-    // Send the gathered data via an AJAX request
-    $.ajax({
-        url: '/save_column_details/',  // Your Django view URL for saving the column details
-        type: 'POST',
-        data: {
-            report_data: JSON.stringify(reportData),  // Send the reportData object as a JSON string
-            csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()  // CSRF token for security
-        },
-        success: function(response) {
-            // Handle the server response here (e.g., display a success message)
-            console.log('Column details saved successfully:', response);
-            alert('Column details saved successfully!');
-        },
-        error: function(xhr, status, error) {
-            // Handle the error response here (e.g., display an error message)
-            console.log('Error saving column details:', error);
-            alert('Error saving column details: ' + error);
-        }
-    });
-}
-
-// Attach the saveColumnDetails function to the submit button
-$('#save_columns').on('click', function(event) {
-    event.preventDefault();  // Prevent default form submission (if any)
-    saveColumnDetails();  // Call the function to save the column details
-});
 
 
 
 
 
-
-
-
-
-
-
-    function generateReport() {
+function generateReport() {
     // Prepare the data object to hold database name, tables, columns, and selected types
     var reportData = {};
 
@@ -470,13 +403,13 @@ $('#save_columns').on('click', function(event) {
         var columns = {};
 
         // Iterate over each column in the table section
-        $(this).find('.form-group').each(function() {
-            var columnName = $(this).find('label').first().text().replace(':', ''); // Get column name
+        $(this).find('table tbody tr').each(function() {
+            var columnName = $(this).find('td:first').text(); // Get column name (first cell)
             var selectedTypes = [];
 
             // Check which checkboxes are selected for this column
             $(this).find('.form-check-input:checked').each(function() {
-                var typeValue = $(this).val();
+                var typeValue = $(this).val(); // Get the value of the checked checkbox
                 selectedTypes.push(typeValue); // Add selected type to array
             });
 
@@ -523,43 +456,6 @@ $('#submit_btn').on('click', function(event) {
 
 
 
-
-
-
-
-
-    // Collect selected columns and their conditions when the submit button is clicked
-    // $('#submit_btn').click(function() {
-    //     var selectedColumns = [];
-    //     var conditions = {};
-    //     var dbName = $('#db_select').val();  // Get the selected database name
-    //     var tableName = $('#table_select').val();  // Get the selected table name
-
-    //     // Get the selected columns and their conditions
-    //     $('input[name="columns"]:checked').each(function() {
-    //         var column = $(this).val();  // Get selected column name
-    //         selectedColumns.push(column);
-            
-    //     });
-
-    //     // Send the selected columns, conditions, db_name, and table_name to the backend
-    //     $.ajax({
-    //         url: '/generate_report/',  // Django view URL
-    //         type: 'POST',
-    //         data: {
-    //             'db_name': dbName,  // Send db_name
-    //             'table_name': tableName,  // Send table_name
-    //             'columns': selectedColumns,  // Send the selected columns
-    //             'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),  // CSRF token
-    //         },
-    //         success: function(response) {
-    //             $('#report_area').html(response.report);  // Display the generated report
-    //         },
-    //         error: function(xhr, status, error) {
-    //             console.error("Error: " + error);
-    //         }
-    //     });
-    // });
 
 
 

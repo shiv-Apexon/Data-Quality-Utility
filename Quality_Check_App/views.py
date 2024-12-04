@@ -14,11 +14,11 @@ from django.db import connection
 from django.template.loader import render_to_string
 
 CHECK_TYPE_MAP = {
-    '1': 'NULL Values',
-    '2': 'Not a String',
-    '3': 'Not a number',
-    '4': 'Not in Date Format',
-    '5': 'Not a Boolean'
+    'NULL': 'NULL Values',
+    'STRING': 'Not a String',
+    'NUMBER': 'Not a number',
+    'DATE': 'Not in Date Format',
+    'BOOLEAN': 'Not a Boolean'
 }
 
 
@@ -211,52 +211,111 @@ def get_tables(request):
     return JsonResponse({'tables': tables})
 
 # Function to get columns for a specific table in a database
-def get_columns(request):
+def get_columns_and_types(request):
     db_name = request.GET.get('db_name')
     table_name = request.GET.getlist('table_name[]')
+    print("-------------------------table names_________\n",table_name)
     db_config = request.session.get('db_config')
     if table_name == []:
         response = get_tables(request)
         data = json.loads(response.content)  # Convert JSON string to Python dict
         table_name = data.get('tables', [])     
     engine = db_config['db_engine']
-    columns = []
+    table_and_columns={}
     if db_name and table_name and engine:
-        try:
-            if engine == "mysql":
-                host = db_config['host']
-                user = db_config['username']
-                password = db_config['password']
+        # try:
+        #     if engine == "mysql":
+        #         host = db_config['host']
+        #         user = db_config['username']
+        #         password = db_config['password']
 
-                # Connect to MySQL database
-                conn = pymysql.connect(host=host, user=user, password=password, database=db_name)
-                cursor = conn.cursor()
-                table_and_columns = {}
+        #         # Connect to MySQL database
+        #         conn = pymysql.connect(host=host, user=user, password=password, database=db_name)
+        #         cursor = conn.cursor()
+        #         table_and_columns = {}
 
-                for table in table_name:
-                    try:
-                        # Execute the query to get the columns for the given table
-                        cursor.execute(f"SHOW COLUMNS FROM {table}")
-                        columns = [row[0] for row in cursor.fetchall()]  # Fetch column names
+    #             for table in table_name:
+    #                 try:
+    #                     # Execute the query to get the columns for the given table
+    #                     cursor.execute(f"SHOW COLUMNS FROM {table}")
+    #                     columns = [row[0] for row in cursor.fetchall()]  # Fetch column names
                         
-                        # Save the column names for the current table in the dictionary
-                        table_and_columns[table] = columns
-                    except Exception as e:
-                        # If there is an error fetching the columns (e.g., table does not exist), handle it
-                        table_and_columns[table] = f"Error: {str(e)}"
+    #                     # Save the column names for the current table in the dictionary
+    #                     table_and_columns[table] = columns
+    #                 except Exception as e:
+    #                     # If there is an error fetching the columns (e.g., table does not exist), handle it
+    #                     table_and_columns[table] = f"Error: {str(e)}"
                 
-                # Close the database connection
-                conn.close()
+    #             # Close the database connection
+    #             conn.close()
 
-                # Return the columns as a JSON response
+    #             # Return the columns as a JSON response
 
 
-            # Add other database engines here (PostgreSQL, SQLite, etc.) as needed.
+    #         # Add other database engines here (PostgreSQL, SQLite, etc.) as needed.
 
-        except Exception as e:
-            print(f"Error fetching columns: {str(e)}")
-        print("---tables and columns--",table_and_columns)
-        return JsonResponse({'table_and_columns': table_and_columns})
+    #     except Exception as e:
+    #         print(f"Error fetching columns: {str(e)}")
+
+        if engine == "mysql":
+            host = db_config['host']
+            user = db_config['username']
+            password = db_config['password']
+
+            # Connect to MySQL database
+            conn = pymysql.connect(host=host, user=user, password=password, database=db_name)
+            cursor = conn.cursor()
+
+            for table in table_name:
+                        # Execute query to get column information from MySQL
+                        cursor.execute(f"SHOW COLUMNS FROM {table}")
+                        columns_info = cursor.fetchall()  # Fetch column details
+                        columns = {}
+
+                        # Process each column information
+                        for column_info in columns_info:
+                            column_name = column_info[0]  # Column name
+                            column_type = column_info[1]  # Column data type
+                            # Map column types to checkboxes
+
+                            if 'int' in column_type or 'decimal' in column_type:
+                                # Numeric types (NULL, NUMBER)
+                                columns[column_name] = {
+                                    'data_type': 'NUMBER',
+                                    'valid_types': ['NULL', 'NUMBER']
+                                }
+                            elif 'varchar' in column_type or 'text' in column_type:
+                                # String types (NULL, STRING)
+                                columns[column_name] = {
+                                    'data_type': 'STRING',
+                                    'valid_types': ['NULL', 'STRING']
+                                }
+                            elif 'date' in column_type or 'datetime' in column_type:
+                                # Date types (NULL, DATE)
+                                columns[column_name] = {
+                                    'data_type': 'DATE',
+                                    'valid_types': ['NULL', 'DATE']
+                                }
+                            elif 'boolean' in column_type:
+                                # Boolean types (NULL, BOOLEAN)
+                                columns[column_name] = {
+                                    'data_type': 'BOOLEAN',
+                                    'valid_types': ['NULL', 'BOOLEAN']
+                                }
+                            else:
+                                # Default to NULL if the type is unknown or unhandled
+                                columns[column_name] = {
+                                    'data_type': 'UNKNOWN',
+                                    'valid_types': ['NULL']
+                                }
+
+                        table_and_columns[table]=columns
+
+                    
+    # table_and_columns = {'column_types': {'id':["NULL","NUMBER"], 'check_type':["NULL","STRING"]}, 'employee_details': {'empid':["NULL","NUMBER"], 'name':["NULL","STRING"], 'age':["NULL","NUMBER"], 'gender':["NULL","BOOLEAN"], 'mobile_number':["NULL","NUMBER"]}}
+
+    print("---tables and columns--",table_and_columns)
+    return JsonResponse({'table_and_columns': table_and_columns})
 
 @csrf_exempt
 def close_connection(request):
@@ -364,6 +423,8 @@ def table_exists(table_name,db_name,db_config):
 
                 cursor.execute(f"SHOW TABLES LIKE '{table_name}';")
                 result = cursor.fetchone()
+                conn.commit()
+
             return result is not None
 
 @csrf_exempt
@@ -377,7 +438,7 @@ def save_column_details(request):
 
             report_data = json.loads(request.POST.get('report_data'))
             db_name = report_data['db_name']
-
+            print("-----sve cl det----",report_data)
             host = db_config['host']
             user = db_config['username']
             password = db_config['password']
@@ -386,6 +447,8 @@ def save_column_details(request):
             conn = pymysql.connect(host=host, user=user, password=password)
             cursor = conn.cursor()
             cursor.execute(f"USE {db_name};")
+            conn.commit()
+
             try:
                 if not table_exists('column_details',db_name,db_config):
                     with conn.cursor() as cursor:
@@ -395,9 +458,11 @@ def save_column_details(request):
                                 db_name VARCHAR(255) NOT NULL,
                                 table_name VARCHAR(255) NOT NULL,
                                 column_name VARCHAR(255) NOT NULL,
-                                column_type INT NOT NULL
+                                column_type VARCHAR(255) 
                             );
                         """)
+
+                    conn.commit()
 
                 for table_name, columns in report_data.items():
                         # Skip the 'db_name' key (we only want table data)
@@ -410,14 +475,16 @@ def save_column_details(request):
                     conn.commit()
 
                     for column_name, column_types in columns.items():
+                        print(column_name, column_types,columns)
                         for column_type in column_types:
                             cursor.execute(f"""
                                     INSERT INTO column_details (db_name, table_name, column_name, column_type)
-                                    VALUES ('{db_name}', '{table_name}', '{column_name}', {column_type})
+                                    VALUES ('{db_name}', '{table_name}', '{column_name}', '{column_type}')
                                """)
                             conn.commit()
+                            print(f"Executed : '{db_name}', '{table_name}', '{column_name}', '{column_type}'")
 
-                    return JsonResponse({'message': 'Column details saved successfully!'})
+                return JsonResponse({'message': 'Column details saved successfully!'})
             except Exception as e:
                 # If there's an error while inserting, return the error message
                 return JsonResponse({'error': str(e)}, status=400)
@@ -492,9 +559,6 @@ def save_quality_check_report(request):
                 # Commit the transaction
                 conn.commit()
 
-                # Close the cursor and connection
-                cursor.close()
-                conn.close()
 
                 return JsonResponse({'message': 'Report saved successfully!'}, status=201)
 
