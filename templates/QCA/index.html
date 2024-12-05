@@ -1,5 +1,9 @@
+{% extends 'QCA\base.html' %}
+
+{% block content %}
+
 <!-- templates/home.html -->
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -10,25 +14,25 @@
     <link href="https://getbootstrap.com/docs/5.2/assets/css/docs.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" integrity="sha384-tViUnnbYAV00FLIhhi3v/dWt3Jxw4gZQcNoSCxCIFNJVCx7/D55/wXsrNIRANwdD" crossorigin="anonymous">
     <style>
-        .connector-icon{
-            background-color: #1656a2;
-            height: 2.5rem;
-            width: 2.5rem;
 
-            
-        }
     </style>
 </head>
 
-<body>
+<body> -->
 
     <div class="mt-5">
-        <h1 class="text-center mb-4 ">Data Quality Checks</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item fw-bold"><a href="#" style="color: #1656a2;">Home</a></li>
+              <li class="breadcrumb-item fw-bold"><a href="#" style="color: #1656a2;">Connector</a></li>
+              <li class="breadcrumb-item active" aria-current="page">New DB Connection</li>
 
+            </ol>
+          </nav>
         <!-- Form Section -->
         <div class=" mx-auto mt-5 ">
             <form method="POST" action="{% url 'connect-db' %}" >
-                <div class=" d-flex flex-column flex-md-row mx-md-3 m-3 justify-content-start gap-md-3 gap-1 border-top">
+                <div class=" d-flex flex-column flex-md-row mx-md-3 m-3 justify-content-start gap-md-5 gap-1 border-top">
                 {% csrf_token %}
                 <div class="m-1">
                     <label for="id_database" class="form-label fw-bold">Select Connection</label>
@@ -59,7 +63,7 @@
 
 
 
-                <div class=" d-flex flex-column flex-md-row mx-md-3 mx-3 mb-5 justify-content-start gap-md-3 gap-1 border-top border-2">
+                <div class=" d-flex flex-column flex-md-row mx-md-3 mx-3 mb-5 justify-content-between gap-md-3 gap-1 border-top border-2">
 
                 <div class="m-1">
                         <label for="database_name" class="form-label fw-bold">Database</label>
@@ -130,7 +134,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
         crossorigin="anonymous"></script>
-</body>
+<!-- </body>
 
-</html>
+</html> -->
 
+{% endblock%}
