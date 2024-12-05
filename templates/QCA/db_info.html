@@ -15,6 +15,33 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
 
     <style>
+        /* Style the scrollbar track (the background of the scrollbar) */
+        ::-webkit-scrollbar {
+            width: 5px; /* Adjust the width of the scrollbar */
+            height: 12px; /* Adjust the height of horizontal scrollbar */
+        }
+
+        /* Style the scrollbar track (where the thumb moves) */
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; /* Light gray background for the track */
+        }
+
+        /* Style the scrollbar thumb (the draggable part of the scrollbar) */
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #0d6efd, #0056b3); /* Blue gradient */
+            border-radius: 10px; /* Optional: rounded corners */
+        }
+
+        /* Style when the user hovers over the thumb */
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #0d6efd, #0056b3); /* Blue gradient */
+        }
+
+
+        input.form-check-input[type="checkbox"] {
+            cursor: pointer;
+        }
+
         /* Scrollable Div for tables and columns */
         #tables_list, #columns_list {
             max-height: 300px;
@@ -42,16 +69,16 @@
     </style>
 </head>
 <body>
-    <div class="container mt-4">
-        <div class="d-flex justify-content-between w-100 mh-100">
+    <div class="container shadow p-3 my-2 bg-body-tertiary rounded">
+        <div class="d-flex justify-content-between w-100 mh-100 ">
             <h2>Select Database, Table, and Columns</h2>
             <button id="close_connection_btn" type="button" class="btn btn-primary" style="height: 40px; flex-shrink: 0;">Close Connection</button>
           </div>
 
         <!-- Database Dropdown (Searchable) -->
-        <div class="mb-3">
-            <label for="db_select" class="form-label">Select Database</label>
-            <select class="form-select" id="db_select" style="width: 100%" required>
+        <div class="mb-3 ">
+            <label for="db_select" class="form-label fw-bold">Select Database</label>
+            <select class="form-select " id="db_select" style="width: 100%" required>
                 <option value="" selected disabled>Select a Database</option>
                 {% for db, tables in db_tables.items %}
                     <option value="{{ db }}">{{ db }}</option>
@@ -61,7 +88,7 @@
 
         <!-- Tables Dropdown (Searchable, Initially Hidden) -->
         <div class="mb-3" id="tables_section" style="display:none;">
-            <label for="table_select" class="form-label">Select Table</label>
+            <label for="table_select" class="form-label fw-bold">Select Table</label>
             <select class="form-select" id="table_select" style="width: 100%" required multiple = 'multiple'>
                 <option value="" selected disabled>Select a Table</option>
             </select>
@@ -228,21 +255,21 @@
                         var tableData = tableAndColumns[tableName];
                         
                         // Create a new table container for each table
-                        var tableSection = $('<div class="table-section" id="table_' + tableName + '">');
-                        tableSection.append('<hr><h4>' + tableName + '</h4><hr>');  // Add table name
+                        var tableSection = $('<div class="table-section mt-1" id="table_' + tableName + '" >');
+                        tableSection.append('<div class = "mt-1"> &nbsp;</div>');  // Add table name
 
                         // Create the table and its header
-                        var table = $('<table>').addClass('table');
+                        var table = $('<table class = "table table-bordered table-hover shadow p-3 mb-5 bg-body-tertiary">');
                         var thead = $('<thead>').append('<tr>');
                         
                         // Add the check name headings to the table
-                        var headings = ['Column Name', 'Data Type', 'NULL Values', 'STRING', 'NUMBER', 'DATE', 'BOOLEAN'];
+                        var headings = [tableName, 'Data Type', 'NULL Values', 'STRING', 'NUMBER', 'DATE', 'BOOLEAN'];
                         headings.forEach(function(heading) {
-                            thead.append(`<th>${heading}</th>`);
+                            thead.append(`<th class="border p-2 fw-bold">${heading}</th>`);
                         });
                         
                         table.append(thead);
-                        var tbody = $('<tbody>');  // Table body for columns
+                        var tbody = $('<tbody class = "">');  // Table body for columns
 
                         // Loop through each column and create a row with checkboxes
                         for (var column in tableData) {
@@ -280,7 +307,7 @@
                                 checkboxesHTML += `
                                     <td>
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="${checkType}" id="${checkboxId}" ${isEnabled ? '' : 'disabled'}>
+                                            <input class="form-check-input border-dark" type="checkbox" value="${checkType}" id="${checkboxId}" ${isEnabled ? '' : 'disabled'}>
                                         </div>
                                     </td>
                                 `;
@@ -328,7 +355,7 @@
 
         // Iterate over the table sections
         $('.table-section').each(function() {
-            var tableName = $(this).find('h4').text(); // Get the table name
+            var tableName = $(this).find('th').first().text(); // Get the table name
             var columns = {};
 
             // Iterate over each column in the table section
@@ -399,7 +426,7 @@ function generateReport() {
 
     // Iterate over the table sections
     $('.table-section').each(function() {
-        var tableName = $(this).find('h4').text(); // Get the table name
+        var tableName =  $(this).find('th').first().text(); // Get the table name
         var columns = {};
 
         // Iterate over each column in the table section
