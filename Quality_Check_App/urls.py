@@ -4,9 +4,12 @@ from . import views
 
 urlpatterns = [
     path("connect-db/", views.connect_db, name="connect-db"),
+    path("dataqualityhome/connect-db/", views.connect_db, name="connect-db"),
+
     path("db_info/", views.db_info, name="db_info"),
     path('get_tables/', views.get_tables, name='get_tables'),
     path('get_columns_and_types/', views.get_columns_and_types, name='get_columns_and_types'),
+    path("dataqualityhome/", views.data_quality_home, name="data_quality_home"),
     path("", views.index, name="index"),
     path('close_connection/', views.close_connection, name='close_connection'),
     path('generate_report/', views.generate_report, name='generate_report'),

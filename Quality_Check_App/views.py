@@ -25,7 +25,12 @@ CHECK_TYPE_MAP = {
 toaster = ToastNotifier()
 
 def index(request):
-    return render(request, 'QCA/index.html')
+    return render(request, 'QCA/home.html')
+
+def data_quality_home(request):
+        return render(request, 'QCA/dataqualityhome.html')
+
+
 
 def connect_db(request):
     message = None
