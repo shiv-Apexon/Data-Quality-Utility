@@ -54,7 +54,7 @@
         }
         dialog{
             position: fixed;
-            top: 90%;
+            top: 53%;
             left: 50%;
             transform: translate(-50%,-50%);
             display: none;
@@ -74,14 +74,14 @@
     </style>
 </head>
 <body>
-    <div class="container shadow p-3 my-2 bg-body-tertiary rounded">
+    <div class="container shadow-sm p-3 mt-3 bg-body-tertiary rounded">
         <div class="d-flex justify-content-between w-100 mh-100 ">
             <h2>Select Database, Table, and Columns</h2>
             <button id="close_connection_btn" type="button" class="btn btn-primary" style="height: 40px; flex-shrink: 0;">Close Connection</button>
           </div>
 
         <!-- Database Dropdown (Searchable) -->
-        <div class="mb-3 ">
+        <div class="mb-3">
             <label for="db_select" class="form-label fw-bold">Select Database</label>
             <select class="form-select " id="db_select" style="width: 100%" required>
                 <option value="" selected disabled>Select a Database</option>
