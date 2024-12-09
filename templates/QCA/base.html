@@ -7,14 +7,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quality Dashboard</title>
+    <!-- icon -->
+    <link rel="icon" type="image/x-icon" href="/static/src/apexon.png">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://getbootstrap.com/docs/5.2/assets/css/docs.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
         integrity="sha384-tViUnnbYAV00FLIhhi3v/dWt3Jxw4gZQcNoSCxCIFNJVCx7/D55/wXsrNIRANwdD" crossorigin="anonymous">
-        <link rel="stylesheet" href="{% static 'QCA/QCA.css' %}">
-        <link rel="stylesheet" href="{% static 'QCA/QCA.js' %}">
+    <link rel="stylesheet" href="{% static 'QCA/QCA.css' %}">
+    <link rel="stylesheet" href="{% static 'QCA/QCA.js' %}">
 
     <style>
         :root {
@@ -31,7 +33,8 @@
         }
 
         main {
-            width: 100vw;
+            all: unset;
+            /* width: 100vw; */
             /* height: 100vh; */
         }
 
@@ -71,8 +74,8 @@
         }
 
         .ic4_nav_input {
-            height: 40%;
-            width: 60%;
+            /* height: 40% !important; */
+            width: 60% !important;
             border: none;
         }
 
@@ -171,7 +174,7 @@
 
         .ic4_data_section_cards div {
             color: #fff;
-            font-size: clamp(16px, 1.5vw, 24px);
+            font-size: clamp(16px, 1.4vw, 24px);
 
         }
 
@@ -210,7 +213,7 @@
         /* sidebar */
         @media (max-width: 574px) {
             .ic4_sidebar {
-                min-height: 24vh;
+                min-height: 20vh;
 
             }
         }
@@ -235,19 +238,21 @@
                     <p class="fw-bold text-center mt-1">A Apexon Product</p>
                 </div>
 
-                <ul class="ic4_sidebar_list w-100 d-flex flex-column mt-sm-4 px-0 gap-3 fw-bold px-3">
+                <ul class="ic4_sidebar_list w-100 d-flex flex-column mt-sm-4 px-0 gap-3 fw-boldS">
                     <li>
                         <a href="#"
-                            class="d-flex align-items-center justify-content-sm-start justify-content-center gap-2 gap-lg-0" style="text-decoration: none; color:white"><img
-                                src="/static/src/logo.png" height="30px" width="30px" alt="">
-                            <span class="mx-lg-3 mx-md-2 mx-0">Data Quality</span>
+                            class="d-flex align-items-center justify-content-sm-start justify-content-center gap-2 gap-lg-0"
+                            style="text-decoration: none; color:white">
+                            <img src="/static/src/logo.png" class="mx-lg-3 mx-md-2 mx-0" height="30px" width="30px" alt="">
+                            <span class="fw-bold">Setup DQ Environment</span>
                         </a>
                     </li>
                     <li>
                         <a href="#"
-                            class="d-flex align-items-center justify-content-sm-start justify-content-center gap-2 gap-lg-0" style="text-decoration: none; color:white"><img
-                                src="/static/src/logo.png" height="30px" width="30px" alt="">
-                            <span class="mx-lg-3 mx-md-2 mx-0">test2</span>
+                            class="d-flex align-items-center justify-content-sm-start justify-content-center gap-2 gap-lg-0"
+                            style="text-decoration: none; color:white">
+                            <img src="/static/src/logo.png" class="mx-lg-3 mx-md-2 mx-0" height="30px" width="30px" alt="">
+                            <span class="fw-bold">Exexution & Reporting</span>
                         </a>
                     </li>
                 </ul>
@@ -257,7 +262,8 @@
             </div>
 
             <div class="my-sm-3 my-2 bottom-0 px-2">
-                <a href="#" class="ic4_copyright_marker fw-bold text-wrap" style="text-decoration: none; color:white;">Version 1.0 | Copyrights © Apexon LLC </a>
+                <a href="#" class="ic4_copyright_marker fw-bold text-wrap"
+                    style="text-decoration: none; color:white;">Version 1.0 | Copyrights © Apexon LLC </a>
             </div>
 
         </div>
@@ -284,8 +290,8 @@
                             <button type="button" class="ic4_nav_input_btn btn">Search
                             </button>
                         </div> -->
-                        <div class="input-group ic4_nav_input">
-                            <input type="text" class="form-control rounded-start-0" placeholder="Search"
+                        <div class="input-group w-75">
+                            <input type="text" class=" form-control rounded-start-0" placeholder="Search"
                                 aria-label="Recipient's username" aria-describedby="button-addon2">
                             <button class="btn btn-light border-0 rounded-end-1" type="button" id="button-addon2"><i
                                     class="bi bi-search"></i></button>
@@ -340,16 +346,16 @@
         });
 
 
-        document.getElementById('home_page_logo').addEventListener('click', function() {
+        document.getElementById('home_page_logo').addEventListener('click', function () {
             // Redirect to another HTML page within the same project
             window.location.href = '/';  // Replace 'next_page.html' with your target HTML file
         });
 
 
-    document.getElementById('connector_div').addEventListener('click', function() {
-        // Redirect to another HTML page within the same project
-        window.location.href = 'connect-db';  // Replace 'next_page.html' with your target HTML file
-    });
+        document.getElementById('connector_div').addEventListener('click', function () {
+            // Redirect to another HTML page within the same project
+            window.location.href = 'connect-db';  // Replace 'next_page.html' with your target HTML file
+        });
     </script>
 </body>
 
