@@ -34,17 +34,22 @@
             <form method="POST" action="{% url 'connect-db' %}" >
                 <div class=" d-flex flex-column flex-md-row my-md-3 my-2 justify-content-start gap-md-5 gap-1 border-top">
                 {% csrf_token %}
-                <div class="m-1">
+                <div class="m-1 d-none" >
                     <label for="id_database" class="form-label fw-bold">Select Connection</label>
                     <span _ngcontent-jkl-c51="" style="color: red;">*</span>
                     <select class="form-select rounded-0" id="id_database" name="database_engine" aria-label="Select Database" required>
                         <option value="mysql">MySQL</option>
-                        <option value="mssql">MSSQL</option>
-                        <option value="postgre">PostGre</option>
+
                     </select>
                 </div>
 
+                <div class="m-1">
 
+                    <label for="connection_name" class="form-label fw-bold">Connection Name</label>
+                    <span _ngcontent-jkl-c51="" style="color: red;">*</span>
+                    <input type="text" name="connection_name" class="form-control rounded-0" required>
+
+                </div>
                 <div class="m-1">
 
                     <label for="host" class="form-label fw-bold">Hostname</label>
@@ -66,7 +71,7 @@
                 <div class=" d-flex flex-column flex-md-row my-md-3 my-2 mb-5 justify-content-between gap-md-3 gap-1 border-top border-2">
 
                 <div class="m-1">
-                        <label for="database_name" class="form-label fw-bold">Database</label>
+                        <label for="database" class="form-label fw-bold">Database</label>
                         <span _ngcontent-jkl-c51="" style="color: red;">*</span>
     
                         <input type="text" name="database" class="form-control rounded-0" >
@@ -107,7 +112,7 @@
 
 
                 <div class="mt-5">
-                    <button type="submit"  style="background-color: #1656a2;  color: white;" class="btn float-end  m-3 my-lg-5 mx-md-3 px-3 py-2 rounded-5">Connect</button>
+                    <button type="submit"  style="background-color: #1656a2;  color: white;" class="btn float-end  m-3 my-lg-5 mx-md-3 px-3 py-2 rounded-5">Submit</button>
                 </div>
 
             </form>

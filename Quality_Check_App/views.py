@@ -18,7 +18,8 @@ CHECK_TYPE_MAP = {
     'STRING': 'Not a String',
     'NUMBER': 'Not a number',
     'DATE': 'Not in Date Format',
-    'BOOLEAN': 'Not a Boolean'
+    'BOOLEAN': 'Not a Boolean',
+    'UNIQUE':'unique values'
 }
 
 
@@ -42,6 +43,9 @@ def connect_db(request):
         host = request.POST.get('host')
         username = request.POST.get('username')
         password = request.POST.get('password')
+        connection_name = request.POST.get('connection_name')
+        port = request.POST.get('port')
+        db_name = request.POST.get('database')
 
 
         if db_engine == 'mysql':
@@ -64,8 +68,33 @@ def connect_db(request):
                         'db_name': None
 
                         }
+
+
+                    cursor = connection.cursor()
+                    # SQL query to insert data into the 'connection_info' table
+                    insert_query = """
+                    INSERT INTO dq.connection_info (connection_name, platform, host, user, port, password, db_name)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """
+
+                    # Data to be inserted
+                    data = (
+                        connection_name ,
+                        db_engine,
+                        host,
+                        username ,
+                        port ,
+                        password ,
+                        db_name ,
+                    )
+
+                    # Execute the insertion
+                    cursor.execute(insert_query, data)
+                    # Commit the transaction
+                    connection.commit()
                     message = "Successfully connected to the database!"
                     toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
+
                     return redirect('db_info')                    
 
                 else:
@@ -76,7 +105,7 @@ def connect_db(request):
 
             except Error as e:
                 # If there is an error, send an appropriate message
-                message = f"Error: Connection Failed"
+                message = f"Error: {e}"
                 toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
 
 
@@ -228,40 +257,7 @@ def get_columns_and_types(request):
     engine = db_config['db_engine']
     table_and_columns={}
     if db_name and table_name and engine:
-        # try:
-        #     if engine == "mysql":
-        #         host = db_config['host']
-        #         user = db_config['username']
-        #         password = db_config['password']
-
-        #         # Connect to MySQL database
-        #         conn = pymysql.connect(host=host, user=user, password=password, database=db_name)
-        #         cursor = conn.cursor()
-        #         table_and_columns = {}
-
-    #             for table in table_name:
-    #                 try:
-    #                     # Execute the query to get the columns for the given table
-    #                     cursor.execute(f"SHOW COLUMNS FROM {table}")
-    #                     columns = [row[0] for row in cursor.fetchall()]  # Fetch column names
-                        
-    #                     # Save the column names for the current table in the dictionary
-    #                     table_and_columns[table] = columns
-    #                 except Exception as e:
-    #                     # If there is an error fetching the columns (e.g., table does not exist), handle it
-    #                     table_and_columns[table] = f"Error: {str(e)}"
-                
-    #             # Close the database connection
-    #             conn.close()
-
-    #             # Return the columns as a JSON response
-
-
-    #         # Add other database engines here (PostgreSQL, SQLite, etc.) as needed.
-
-    #     except Exception as e:
-    #         print(f"Error fetching columns: {str(e)}")
-
+       
         if engine == "mysql":
             host = db_config['host']
             user = db_config['username']
@@ -287,25 +283,25 @@ def get_columns_and_types(request):
                                 # Numeric types (NULL, NUMBER)
                                 columns[column_name] = {
                                     'data_type': 'NUMBER',
-                                    'valid_types': ['NULL', 'NUMBER']
+                                    'valid_types': ['NULL', 'NUMBER','UNIQUE']
                                 }
                             elif 'varchar' in column_type or 'text' in column_type:
                                 # String types (NULL, STRING)
                                 columns[column_name] = {
                                     'data_type': 'STRING',
-                                    'valid_types': ['NULL', 'STRING']
+                                    'valid_types': ['NULL', 'STRING','UNIQUE']
                                 }
                             elif 'date' in column_type or 'datetime' in column_type:
                                 # Date types (NULL, DATE)
                                 columns[column_name] = {
                                     'data_type': 'DATE',
-                                    'valid_types': ['NULL', 'DATE']
+                                    'valid_types': ['NULL', 'DATE','UNIQUE']
                                 }
                             elif 'boolean' in column_type:
                                 # Boolean types (NULL, BOOLEAN)
                                 columns[column_name] = {
                                     'data_type': 'BOOLEAN',
-                                    'valid_types': ['NULL', 'BOOLEAN']
+                                    'valid_types': ['NULL', 'BOOLEAN','UNIQUE']
                                 }
                             else:
                                 # Default to NULL if the type is unknown or unhandled
@@ -376,10 +372,28 @@ def generate_report(request):
                     # Loop through each check type (the check type is a list, e.g., ["2", "3"])
                     for check in checks:
                         check_type = CHECK_TYPE_MAP.get(check)
+
                         if check_type:
                             # Generate the SQL query based on the check type
                             sql = generate_check_query(db_name, table_name, column_name, check_type)
-
+                            if check_type == 'unique values':
+                                conn = pymysql.connect(host=host, user=user, password=password)
+                                with conn.cursor() as cursor:
+                                    cursor.execute(sql)
+                                    result = cursor.fetchall()
+                                if result:
+                                    unique_values = [row[0] for row in result]  # Extract the distinct values from the result
+                                    unique_count = len(unique_values)  # Get the length of the list
+                                    if table_name not in report:
+                                        report[table_name] = []
+                                    report[table_name].append({
+                                        'column_name': column_name,
+                                        'check_name': check_type,
+                                        'result': unique_count,  # Append the length of the unique values list
+                                        'unique_list':unique_values
+                                    })
+                                    break
+                                                    
                             conn = pymysql.connect(host=host, user=user, password=password)
                             with conn.cursor() as cursor:
                                 cursor.execute(sql)
@@ -391,6 +405,14 @@ def generate_report(request):
                                     'check_name': check_type,
                                     'result': result[0]  # assuming result contains the check result
                                 })
+
+                total_rows_query = f"SELECT COUNT(*) FROM  {db_name}.{table_name}"
+                cursor = conn.cursor()
+                cursor.execute(total_rows_query)
+                total_rows = cursor.fetchone()[0]
+                report[table_name].append({'Total_Rows':total_rows})
+
+
         print("-----output---",report)
         return JsonResponse({'report': render_to_string('QCA/report_template.html', {'report': report})})
             # Render the report HTML using the template and return it as a JSON response
@@ -410,6 +432,8 @@ def generate_check_query(db_name, table_name, column_name, check_type):
         return f"SELECT COUNT(*) FROM {db_name}.{table_name} WHERE  {column_name} IS NOT NULL AND NOT {column_name} REGEXP '^\d{4}-\d{2}-\d{2}$'"
     elif check_type == 'Not a Boolean':
         return f"SELECT COUNT(*) FROM {db_name}.{table_name} WHERE  {column_name} IS NOT NULL AND {column_name} NOT IN ('true', 'false')"
+    elif check_type == 'unique values':
+        return f"SELECT DISTINCT {column_name} FROM {db_name}.{table_name} WHERE {column_name} IS NOT NULL"
     else:
         return ""
     
