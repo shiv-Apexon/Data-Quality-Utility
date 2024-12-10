@@ -239,8 +239,8 @@
                 </div>
 
                 <ul class="ic4_sidebar_list w-100 d-flex flex-column mt-sm-4 px-0 gap-3 fw-boldS">
-                    <li>
-                        <a href="#"
+                    <li id="back_to_dq_home" >
+                        <a href="/dataqualityhome" 
                             class="d-flex align-items-center justify-content-sm-start justify-content-center gap-2 gap-lg-0"
                             style="text-decoration: none; color:white">
                             <img src="/static/src/logo.png" class="mx-lg-3 mx-md-2 mx-0" height="30px" width="30px" alt="">
@@ -248,7 +248,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#"
+                        <a href="/dq_report_home"
                             class="d-flex align-items-center justify-content-sm-start justify-content-center gap-2 gap-lg-0"
                             style="text-decoration: none; color:white">
                             <img src="/static/src/logo.png" class="mx-lg-3 mx-md-2 mx-0" height="30px" width="30px" alt="">
@@ -307,7 +307,7 @@
             </nav>
 
             <!-- data section for first page -->
-            <div class="ic4_data_section mx-3 d-flex flex-column w-auto m-0">
+            <div class="ic4_data_section d-flex flex-column w-auto m-0">
                 {% block content %}
                 <!-- Content will be injected here -->
                 {% endblock %}
@@ -350,12 +350,13 @@
             // Redirect to another HTML page within the same project
             window.location.href = '/';  // Replace 'next_page.html' with your target HTML file
         });
-
-
-        document.getElementById('connector_div').addEventListener('click', function () {
+        document.getElementById('back_to_dq_home').addEventListener('click', function () {
             // Redirect to another HTML page within the same project
-            window.location.href = 'connect-db';  // Replace 'next_page.html' with your target HTML file
+            window.location.href = '/dataqualityhome';  // Replace 'next_page.html' with your target HTML file
         });
+
+
+
     </script>
 </body>
 
