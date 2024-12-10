@@ -121,37 +121,29 @@
             <span>Use Connector</span>
         </div>
 
-        <div class=" d-flex justify-content-start gap-3 my-2 mx-2 px-2 pb-4 rounded-1 pt-2 border border-1 shadow-sm">
-            <div class="dropdown ">
-                <button class="btn  dropdown-toggle border border-1" type="button" id="dropdownPlatformButton"
-                    data-bs-toggle="dropdown" aria-expanded="false">Select Platform
-                </button>
-                <ul class="dropdown-menu " aria-labelledby="dropdownPlatformButton">
-                    <li><a class="dropdown-item text-black" href="#" onclick="selectPlatform('MySQL')">MySQL</a></li>
-                    <li><a class="dropdown-item text-black" href="#"
-                            onclick="selectPlatform('Microsoft SQL Server')">Microsoft SQL Server</a></li>
-                    <li><a class="dropdown-item text-black" href="#"
-                            onclick="selectPlatform('PostgreSQL')">PostgreSQL</a></li>
-                    <li><a class="dropdown-item text-black" href="#" onclick="selectPlatform('Google BigQuery')">Google
-                            BigQuery</a></li>
-                </ul>
+        <div class=" d-flex flex-column flex-sm-row justify-content-start gap-3 my-2 mx-2 px-2 pb-4 rounded-1 pt-2 border border-1 shadow-sm">
+            <div class="mb-3">
+                <select class="form-select" id="dropdownPlatformButton" style="width: 100%" required>
+                    <option value="" selected disabled>Select a Platform</option>
+                    <option value="MySQL" class="text-black">MySQL</option>
+                    <option value="Microsoft SQL Server" class="text-black">Microsoft SQL Server</option>
+                    <option value="PostgreSQL" class="text-black">PostgreSQL</option>
+                    <option value="Google BigQuery" class="text-black">Google BigQuery</option>
+                </select>
             </div>
-            <div class="dropdown ">
-                <button class="btn  dropdown-toggle border border-1" type="button" id="dropdownConnectionButton"
-                    data-bs-toggle="dropdown" aria-expanded="false">Select Connection
-                </button>
-                <ul class="dropdown-menu " aria-labelledby="dropdownConnectionButton">
-                    <li><a class="dropdown-item text-black" href="#" onclick="selectConnection('MySQL')">MySQL</a></li>
-                    <li><a class="dropdown-item text-black" href="#"
-                            onclick="selectConnection('Microsoft SQL Server')">Microsoft SQL Server</a></li>
-                    <li><a class="dropdown-item text-black" href="#"
-                            onclick="selectConnection('PostgreSQL')">PostgreSQL</a></li>
-                    <li><a class="dropdown-item text-black" href="#" onclick="selectConnection('Google BigQuery')">Google
-                            BigQuery</a></li>
-                </ul>
+            
+            <div class="mb-3">
+                <select class="form-select" id="dropdownConnectionButton" style="width: 100%" required>
+                    <option value="" selected disabled>Select a Connection</option>
+                    <option value="MySQL" class="text-black">MySQL</option>
+                    <option value="Microsoft SQL Server" class="text-black">Microsoft SQL Server</option>
+                    <option value="PostgreSQL" class="text-black">PostgreSQL</option>
+                    <option value="Google BigQuery" class="text-black">Google BigQuery</option>
+                </select>
             </div>
+            
         </div>
-        <div class="border border-1 shadow-sm m-2 p-2 rounded-1">
+        <div class="border border-1 shadow-sm m-2 p-2 rounded-1" id = "set_metadeta" style="display: none;">
             <div class=" d-flex justify-content-between  ">
                 <h2>Select Database, Table, and Columns</h2>
                 <button id="close_connection_btn" type="button" class="btn btn-primary"
@@ -207,6 +199,31 @@
         function selectConnection(connectionName) {
             document.getElementById("dropdownConnectionButton").innerText = connectionName;
         }
+
+        // Get references to the select elements and the div 
+        const dropdownPlatformSelect = document.getElementById('dropdownPlatformButton');
+        const dropdownConnectionSelect = document.getElementById('dropdownConnectionButton');
+        const targetDiv = document.getElementById('set_metadeta');
+
+        // Function to check the selected values and toggle visibility of the div
+        function toggleDivVisibility() {
+            console.log("--- Platform selected:", dropdownPlatformSelect.value);
+            console.log("--- Connection selected:", dropdownConnectionSelect.value);
+
+            if (dropdownPlatformSelect.value !== "" && dropdownConnectionSelect.value !== "") {
+                targetDiv.style.display = 'block'; // Show the div
+            } else {
+                targetDiv.style.display = 'none'; // Hide the div
+            }
+        }
+
+        // Add event listeners to select elements to check values when changed
+        dropdownPlatformSelect.addEventListener('change', toggleDivVisibility);
+        dropdownConnectionSelect.addEventListener('change', toggleDivVisibility);
+
+        // Initial check to hide/show the div on page load
+        toggleDivVisibility();
+
     </script>
 
     <script>

@@ -31,6 +31,10 @@ def index(request):
 def data_quality_home(request):
         return render(request, 'QCA/dataqualityhome.html')
 
+def select_platform(request):
+        return render(request, 'QCA/select_platform.html')
+def dq_report_home(request):
+     return render(request,'QCA/dataqualityreport.html')
 
 
 def connect_db(request):
@@ -95,7 +99,7 @@ def connect_db(request):
                     message = "Successfully connected to the database!"
                     toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
 
-                    return redirect('db_info')                    
+                    return redirect('/dataqualityhome')                    
 
                 else:
                     message = "Failed to connect to the database."
@@ -152,7 +156,9 @@ def connect_db(request):
 def db_info(request):
     db_config = request.session.get('db_config')
     if not db_config:
-        return redirect('connect-db')
+        message = "Connection is not Established."
+        toaster.show_toast("Connection Status", message, duration=2) 
+        return redirect('/dataqualityhome')
 
     host = db_config['host']
     user = db_config['username']
@@ -334,7 +340,7 @@ def close_connection(request):
                 conn.close()
                 request.session.clear() 
                 # Return a JSON response with the redirect URL
-                return JsonResponse({'redirect_url': '/connect-db'})
+                return JsonResponse({'redirect_url': '/dataqualityhome'})
     elif engine == "mssql":
                 host = db_config['host']
                 user = db_config['username']
@@ -346,7 +352,7 @@ def close_connection(request):
                                       'PWD={password}')
                 conn.close()
                 request.session.clear() 
-                return JsonResponse({'redirect_url': '/connect-db'})
+                return JsonResponse({'redirect_url': '/dataqualityhome'})
 
 
 @csrf_exempt
