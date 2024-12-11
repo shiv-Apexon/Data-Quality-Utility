@@ -115,7 +115,7 @@
             <li class="breadcrumb-item active" aria-current="page">Save Metadata</li>
         </ol>
     </nav>
-    <div class=" shadow-sm mt-2 bg-body-tertiary rounded border-top border-3  border-primary mb-3">
+    <div class=" shadow-sm mt-2 bg-body-tertiary rounded border-top border-3  border-primary mb-3 mx-3">
         <div class="bg-secondary-subtle px-3 py-1">
             <i class="bi bi-plug-fill fs-5 fw-bold mt-1 "></i>
             <span>Use Connector</span>
@@ -149,12 +149,12 @@
                 <button id="close_connection_btn" type="button" class="btn btn-primary"
                     style="height: 40px; flex-shrink: 0;">Close Connection</button>
             </div>
-
+<div class="d-flex justify-content-start gap-3 align-items-center">
             <!-- Database Dropdown (Searchable) -->
-            <div class="mb-3">
+            <div class="mb-3 mx-3" >
                 <label for="db_select" class="form-label fw-bold">Select Database</label>
-                <select class="form-select " id="db_select" style="width: 100%" required>
-                    <option value="" selected disabled>Select a Database</option>
+                <select class="form-select" id="db_select" style="width: 100%;" required>
+                    <option value=""  selected disabled>Select a Database</option>
                     {% for db, tables in db_tables.items %}
                     <option value="{{ db }}">{{ db }}</option>
                     {% endfor %}
@@ -168,13 +168,13 @@
                     <option value="" selected disabled>Select a Table</option>
                 </select>
             </div>
+        </div>
 
             <!-- Columns Section (Initially Hidden) -->
             <div id="columns_section" style="display:none;">
                 <h3>Columns in the Selected Table:</h3>
                 <div id="columns_list"></div>
             </div>
-
 
 
             <!-- Submit Button (Initially Disabled) -->

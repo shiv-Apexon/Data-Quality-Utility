@@ -75,6 +75,33 @@ def connect_db(request):
 
 
                     cursor = connection.cursor()
+
+
+
+                    create_schema_query = f"CREATE SCHEMA IF NOT EXISTS dq;"
+                    create_table_query = '''
+                        CREATE TABLE IF NOT EXISTS dq.connection_info (
+                            conn_id INT AUTO_INCREMENT PRIMARY KEY,
+                            connection_name VARCHAR(255) NOT NULL,
+                            platform VARCHAR(100),
+                            host VARCHAR(255),
+                            user VARCHAR(255),
+                            port INT,
+                            password VARCHAR(255),
+                            db_name VARCHAR(255)
+                        );
+                    '''
+
+                    cursor.execute(create_schema_query)
+                
+                # Use the schema
+                    cursor.execute(f"USE dq;")
+                    
+                    # Create table if it doesn't exist
+                    print("Creating table: connection_info")
+                    cursor.execute(create_table_query)
+
+
                     # SQL query to insert data into the 'connection_info' table
                     insert_query = """
                     INSERT INTO dq.connection_info (connection_name, platform, host, user, port, password, db_name)
@@ -150,6 +177,17 @@ def connect_db(request):
     return render(request, 'QCA/index.html', {'message': message})
 
 
+def connect_db_with_conn_name(request):
+    if request.method == 'POST':
+        conn_name = request.POST.get('connection_name')
+
+        # request.session['db_config'] = {
+        #                 'host':host,
+        #                 'username':username,
+        #                 'password':password,
+        #                 'db_engine':db_engine,
+        #                 'db_name': None
+        #                 }
 
 
 
@@ -472,7 +510,7 @@ def save_column_details(request):
         if engine == 'mysql':
 
             report_data = json.loads(request.POST.get('report_data'))
-            db_name = report_data['db_name']
+            db_name = 'dq'
             print("-----sve cl det----",report_data)
             host = db_config['host']
             user = db_config['username']
@@ -481,14 +519,14 @@ def save_column_details(request):
             # Set the database connection (if necessary)
             conn = pymysql.connect(host=host, user=user, password=password)
             cursor = conn.cursor()
-            cursor.execute(f"USE {db_name};")
+            cursor.execute(f"USE dq;")
             conn.commit()
 
             try:
                 if not table_exists('column_details',db_name,db_config):
                     with conn.cursor() as cursor:
                         cursor.execute(f"""
-                            CREATE TABLE column_details (
+                            CREATE TABLE dq.column_details (
                                 sr_no INT PRIMARY KEY AUTO_INCREMENT,
                                 db_name VARCHAR(255) NOT NULL,
                                 table_name VARCHAR(255) NOT NULL,
@@ -504,7 +542,7 @@ def save_column_details(request):
                     if table_name == 'db_name':
                         continue
                     cursor.execute("""
-                            DELETE FROM column_details 
+                            DELETE FROM dq.column_details 
                             WHERE db_name = %s AND table_name = %s
                         """, [db_name, table_name])
                     conn.commit()
@@ -513,7 +551,7 @@ def save_column_details(request):
                         print(column_name, column_types,columns)
                         for column_type in column_types:
                             cursor.execute(f"""
-                                    INSERT INTO column_details (db_name, table_name, column_name, column_type)
+                                    INSERT INTO dq.column_details (db_name, table_name, column_name, column_type)
                                     VALUES ('{db_name}', '{table_name}', '{column_name}', '{column_type}')
                                """)
                             conn.commit()
@@ -561,13 +599,13 @@ def save_quality_check_report(request):
 
 
                 # If the table does not exist, create it
-                istable_exists = table_exists('quality_checks_reports',db_name,db_config)
+                istable_exists = table_exists('dq.quality_checks_reports',db_name,db_config)
                 if not istable_exists:
                     cursor.execute(f"""
-                        USE {db_name};
+                        USE dq;
                     """)
                     cursor.execute("""
-                        CREATE TABLE quality_checks_reports (
+                        CREATE TABLE dq.quality_checks_reports (
                             id SERIAL PRIMARY KEY,
                             name VARCHAR(255) UNIQUE NOT NULL,
                             report TEXT NOT NULL,
@@ -578,7 +616,7 @@ def save_quality_check_report(request):
 
                 # Check if a report with the same name already exists
                 cursor.execute("""
-                    SELECT id FROM quality_checks_reports WHERE name = %s;
+                    SELECT id FROM dq.quality_checks_reports WHERE name = %s;
                 """,(report_name))
 
                 existing_report = cursor.fetchone()
@@ -611,26 +649,31 @@ def save_quality_check_report(request):
 def get_saved_details(request):
     db_config = request.session.get('db_config')
     engine = db_config['db_engine']
-    db_table = request.GET.get('db_table')
+    db_table = 'dq.column_details'
     if request.method == 'GET':
         try:
             if engine == "mysql":
                 db_host = db_config['host']
                 db_user = db_config['username']
                 db_password = db_config['password'] 
-                db_name = db_config['db_name']
 
-                conn = pymysql.connect(host=db_host, user=db_user, password=db_password,database=db_name)
+                conn = pymysql.connect(host=db_host, user=db_user, password=db_password)
                 cursor = conn.cursor()
+                cursor.execute(f"USE dq;")
 
-                istable_exists = table_exists('column_details',db_name,db_config)
+                cursor.execute(f"SHOW TABLES LIKE 'column_details';")
+                result = cursor.fetchone()
+
+                istable_exists = result
+                print("-----------------------------------------------\n",istable_exists)
+
                 if istable_exists:
                     with conn.cursor() as cursor:
                         cursor.execute("""
                                 SELECT table_name,column_name, column_type 
-                                FROM column_details
-                                WHERE db_name = %s
-                            """, [db_name])
+                                FROM dq.column_details
+                                WHERE db_name = 'dq'
+                            """)
         
                         rows = cursor.fetchall()  
 
