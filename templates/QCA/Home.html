@@ -54,11 +54,12 @@
         /* Hero sectiom */
         .hero_section {
             width: 50%;
-            height: 100%;
+            min-height: 100vh;
             background-color: #1666b0;
             display: flex;
             flex-direction: column;
         }
+
 
         .ic4_logo {
             height: 96px;
@@ -80,8 +81,9 @@
         }
 
         .ic4_main_banner {
-            /* height: 300px;
-            width: 380px; */
+            width: clamp(250px, 40vw, 520px);
+            /* Adjust width between 250px and 520px, scaling with 40% of the viewport width */
+            height: clamp(150px, 24vw, 310px);
             margin: 0px auto;
             object-fit: contain;
         }
@@ -101,8 +103,8 @@
 
         /* data section */
         .data_section {
-            width: 50%;
-            height: 100%;
+            /* width: 50%;
+            height: 100%; */
             /* margin: 0px auto; */
             display: flex;
             padding: 2rem 8rem;
@@ -158,30 +160,39 @@
                 width: 100%;
             }
         }
+
+        /* data section */
+
+        @media (max-width: 766px) {
+            .data_section {
+                padding: 2rem 0rem;
+                /* For screens smaller than 992px */
+            }
+        }
     </style>
 
 </head>
 
 <body>
-    <main class="d-flex ">
+    <main class="d-flex flex-column flex-md-row">
 
-        <div class="hero_section">
+        <div class="hero_section w-auto">
             <div class="ic4_logo">
                 <img src="/static/src/logo.png" alt="">
                 <p class="fw-bold text-center mt-1">A Apexon Product</p>
             </div>
-            <img src="/static/src/homepage-1.gif" class="ic4_main_banner h-50 w-100 px-3" alt="">
-            <label for="main_banner" class="ic4_banner_info text-center mt-4 text-wrap w-75 m-auto">Collabrative, Clean
-                Data Lake
-                Controlled Quality
-                for Consumption</label>
+            <img src="/static/src/homepage-1.gif" class="ic4_main_banner px-3" alt="">
+            <label for="main_banner"
+                class="ic4_banner_info text-center mt-4 text-wrap w-75 m-auto fw-semibold">Collabrative, Clean Data Lake
+                Controlled Quality for Consumption
+            </label>
             <div class="my-3">
                 <a href="#" class="ic4_copyright_marker fw-bold"> Version 1.0 | Copyrights © Apexon LLC </a>
             </div>
         </div>
 
         <!-- data information section  -->
-        <div class="data_section container d-flex flex-column gap-3">
+        <div class="data_section container d-flex flex-column gap-3 w-50 h-100 ">
 
             <div class="ic4_user d-flex w-100 justify-content-end align-items-center">
                 <img src="/static/src/user.png" class="ic4_user_logo" alt="">
@@ -192,7 +203,7 @@
                 <input type="text" class="ic4_input_search form-control" placeholder="Search">
             </div>
 
-            <div id = "data_quality_next_page">
+            <div id="data_quality_next_page">
                 <p class="ic4_dq_heading fs-1 fw-bold mt-4 "><span style="color:#1666b0">D</span>ataQuality</p>
                 <p class="ic4_dq_heading_info fs-6 fw-normal">Data Quality at Source ensures that the data is accurate,
                     complete, consistent, and valid right when it is captured or generated. This minimizes the
@@ -210,10 +221,10 @@
         </div>
     </main>
     <script>
-        document.getElementById('data_quality_next_page').addEventListener('click', function() {
-    // Redirect to another HTML page within the same project
-    window.location.href = 'dataqualityhome';  // Replace 'next_page.html' with your target HTML file
-});
+        document.getElementById('data_quality_next_page').addEventListener('click', function () {
+            // Redirect to another HTML page within the same project
+            window.location.href = 'dataqualityhome';  // Replace 'next_page.html' with your target HTML file
+        });
     </script>
 </body>
 

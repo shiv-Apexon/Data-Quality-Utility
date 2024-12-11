@@ -27,6 +27,9 @@
         height: 60px;   
         width: auto;
     }
+    .ic4_source_img{
+        filter: grayscale(10%) contrast(35%) saturate(80%);
+    }
 
     .custom-checkbox-label {
         font-size: 16px;
@@ -40,12 +43,14 @@
     .ic4_custom_checkbox input[type="radio"]:checked+.custom-checkbox-label {
         color: #4175b3;
         border: 3px solid #1656a2;
+    }
 
+    .ic4_custom_checkbox input[type="radio"]:checked+.ic4_source_img {
+        filter: unset;
     }
     .ic4_custom_checkbox input[type="radio"]:hover+.custom-checkbox-label {
         color: #4175b3;
         border: 3px solid #1656a2;
-
     }
 </style>
 </style>
@@ -64,15 +69,15 @@
 
 <div class="d-flex flex-column mx-3">
     <div class="">
-        <h5>Select Source</h5>
-        <div class="mt-3 d-flex gap-3">
+        <h5 class="mt-3">Select Source</h5>
+        <div class="mt-4 d-flex gap-3">
 
-            <label class="ic4_custom_checkbox d-flex flex-column justify-content-center align-items-center">
-                <input type="radio" name="select_source" id="checkbox1">
+            <label class="ic4_custom_checkbox d-flex flex-column justify-content-center align-items-center" id="database_redio">
+                <input type="radio" name="select_source" id="checkbox1" checked>
                 <div
                     class="custom-checkbox-label w-100 h-100 d-flex flex-column justify-content-start align-items-center gap-2">
                     Database
-                    <img src="/static/src/database-svgrepo-com.svg" alt="Image 1">
+                    <img src="/static/src/database-svgrepo-com.svg" class="ic4_source_img" alt="DB">
                     
                 </div>
             </label>
@@ -82,7 +87,7 @@
                 <div
                     class="custom-checkbox-label w-100 h-100 d-flex flex-column justify-content-start align-items-center gap-2">
                     File
-                    <img src="https://ic4.apexon.com/assets/images/database.svg" alt="Image 1">
+                    <img src="/static/src/file.svg" class="ic4_source_img" alt="File">
                 </div>
             </label>
 
@@ -90,8 +95,8 @@
     </div>
 
     <div class="mt-4 w-100">
-        <h5>Select Platform</h5>
-        <div class="mt-3 d-flex gap-3 flex-column flex-md-row w-100">
+        <h5 class="mt-3">Select Platform</h5>
+        <div class="mt-4 d-flex gap-3 flex-column flex-md-row w-100">
 
             <label class="ic4_custom_checkbox d-flex flex-column justify-content-center align-items-center">
                 <input type="radio" name="select_database" id="postgre_db">
@@ -134,6 +139,33 @@
                 </div>
             </label>
 
+        </div>
+        <div class="mt-3 d-flex gap-3 flex-column flex-md-row w-100 d-none">
+
+            <label class="ic4_custom_checkbox d-flex flex-column justify-content-center align-items-center">
+                <input type="radio" name="select_database" id="postgre_db">
+                <div
+                    class="custom-checkbox-label w-100 h-100 d-flex flex-column justify-content-center align-items-center">
+                    <img src="/static/src/postgre.png" alt="Postgre">
+                </div>
+            </label>
+
+            <label class="ic4_custom_checkbox d-flex flex-column justify-content-center align-items-center">
+                <input type="radio" name="select_database" id="mssql_db">
+                <div
+                    class="custom-checkbox-label w-100 h-100 d-flex flex-column justify-content-center align-items-center">
+
+                    <img src="/static/src/sqlserver.png" alt="Sqlserver">
+                </div>
+            </label>
+            <label class="ic4_custom_checkbox d-flex flex-column justify-content-center align-items-center">
+                <input type="radio" name="select_database" id="snowflake_db">
+                <div
+                    class="custom-checkbox-label w-100 h-100 d-flex flex-column justify-content-center align-items-center">
+
+                    <img src="/static/src/snowflake.png" alt="Snoflake">
+                </div>
+            </label>
         </div>
     </div>
 </div>
