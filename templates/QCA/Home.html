@@ -81,7 +81,8 @@
         }
 
         .ic4_main_banner {
-            width: clamp(250px, 40vw, 520px);  /* Adjust width between 250px and 520px, scaling with 40% of the viewport width */
+            width: clamp(250px, 40vw, 520px);
+            /* Adjust width between 250px and 520px, scaling with 40% of the viewport width */
             height: clamp(150px, 24vw, 310px);
             margin: 0px auto;
             object-fit: contain;
@@ -102,8 +103,8 @@
 
         /* data section */
         .data_section {
-            width: 50%;
-            height: 100%;
+            /* width: 50%;
+            height: 100%; */
             /* margin: 0px auto; */
             display: flex;
             padding: 2rem 8rem;
@@ -159,6 +160,15 @@
                 width: 100%;
             }
         }
+
+        /* data section */
+
+        @media (max-width: 766px) {
+            .data_section {
+                padding: 2rem 0rem;
+                /* For screens smaller than 992px */
+            }
+        }
     </style>
 
 </head>
@@ -171,7 +181,7 @@
                 <img src="/static/src/logo.png" alt="">
                 <p class="fw-bold text-center mt-1">A Apexon Product</p>
             </div>
-            <img src="/static/src/homepage-1.gif" class="ic4_main_banner px-3"  alt="">
+            <img src="/static/src/homepage-1.gif" class="ic4_main_banner px-3" alt="">
             <label for="main_banner"
                 class="ic4_banner_info text-center mt-4 text-wrap w-75 m-auto fw-semibold">Collabrative, Clean Data Lake
                 Controlled Quality for Consumption
@@ -182,7 +192,7 @@
         </div>
 
         <!-- data information section  -->
-        <div class="data_section container d-flex flex-column gap-3">
+        <div class="data_section container d-flex flex-column gap-3 w-50 h-100 ">
 
             <div class="ic4_user d-flex w-100 justify-content-end align-items-center">
                 <img src="/static/src/user.png" class="ic4_user_logo" alt="">
