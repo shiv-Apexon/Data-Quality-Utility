@@ -125,8 +125,8 @@
             <div class="mb-3">
                 <select class="form-select" id="dropdownPlatformButton" style="width: 100%" required>
                     <option value="" selected disabled>Select a Platform</option>
-                    <option value="MySQL" class="text-black">MySQL</option>
-                    <option value="Microsoft SQL Server" class="text-black">Microsoft SQL Server</option>
+                    <option value="mysql" class="text-black">MySQL</option>
+                    <option value="mssql" class="text-black">Microsoft SQL Server</option>
                     <option value="PostgreSQL" class="text-black">PostgreSQL</option>
                     <option value="Google BigQuery" class="text-black">Google BigQuery</option>
                 </select>
@@ -135,10 +135,10 @@
             <div class="mb-3">
                 <select class="form-select" id="dropdownConnectionButton" style="width: 100%" required>
                     <option value="" selected disabled>Select a Connection</option>
-                    <option value="MySQL" class="text-black">MySQL</option>
+                    <!-- <option value="MySQL" class="text-black">MySQL</option>
                     <option value="Microsoft SQL Server" class="text-black">Microsoft SQL Server</option>
                     <option value="PostgreSQL" class="text-black">PostgreSQL</option>
-                    <option value="Google BigQuery" class="text-black">Google BigQuery</option>
+                    <option value="Google BigQuery" class="text-black">Google BigQuery</option> -->
                 </select>
             </div>
             
@@ -227,6 +227,44 @@
     </script>
 
     <script>
+
+
+        // Event listener for platform selection change
+        document.getElementById("dropdownPlatformButton").addEventListener("change", function() {
+            const platform = this.value;  // Get the selected platform
+            if (platform) {
+                // Send AJAX request to Django view
+                fetch(`/get_conn_name/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ platform: platform }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const connectionDropdown = document.getElementById("dropdownConnectionButton");
+                    connectionDropdown.innerHTML = '<option value="" selected disabled>Select a Connection</option>'; // Reset options
+
+                    // Populate the connection options based on the selected platform
+                    data.connections.forEach(conn => {
+                        const option = document.createElement("option");
+                        option.value = conn;
+                        option.textContent = conn;
+                        connectionDropdown.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching connections:', error));
+            }
+        });
+
+
+
+
+
+
+
+
 
         // Initialize Select2 for the dropdowns
         $(document).ready(function () {

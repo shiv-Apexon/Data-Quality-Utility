@@ -17,6 +17,7 @@ urlpatterns = [
     path('save_column_details/', views.save_column_details, name='save_column_details'),
     path('save_quality_check_report/', views.save_quality_check_report, name='save_quality_check_report'),
     path('get_saved_details/', views.get_saved_details, name='get_saved_details'),
+    path('get_conn_name/', views.get_conn_name, name='get_conn_name'),
 
 
 ]
