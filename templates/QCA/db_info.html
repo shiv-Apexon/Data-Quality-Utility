@@ -261,6 +261,25 @@
 
 
 
+        document.getElementById("dropdownConnectionButton").addEventListener("change", function() {
+            const conn_name = this.value;  // Get the selected platform
+            if (conn_name) {
+                // Send AJAX request to Django view
+                fetch(`/connect_db_with_conn_name/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ conn_name: conn_name }),
+                })
+                .then(response => response.json())
+                .then(console.log(response))
+
+
+                }});
+
+
+
 
 
 

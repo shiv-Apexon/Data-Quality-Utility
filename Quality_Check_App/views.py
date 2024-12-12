@@ -178,11 +178,14 @@ def connect_db(request):
 
 
 
-
+@csrf_exempt
 def connect_db_with_conn_name(request):
     if request.method == 'POST':
         # Retrieve the connection name from the POST request
-        conn_name = request.POST.get('connection_name')
+        data = json.loads(request.body)       
+        # Access the platform value from the parsed data
+        conn_name = data.get('conn_name')
+
 
         
         if conn_name:
@@ -212,11 +215,14 @@ def connect_db_with_conn_name(request):
                             'host': host,
                             'username': user,
                             'password': password,
-                            'platform': platform,  # Platform for reference
+                            'db_engine': platform, 
                             'db_name': db_name,
                             'port': port
                         }
-
+                        conn.close()
+                        print(request.session['db_config'])
+                        conn = pymysql.connect(host=host, user=user, password=password)
+                        cursor = conn.cursor()
                         # Optionally, return a success response
                         return JsonResponse({"message": "Database connection details stored in session successfully."})
 

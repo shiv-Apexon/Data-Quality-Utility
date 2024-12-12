@@ -18,6 +18,7 @@ urlpatterns = [
     path('save_quality_check_report/', views.save_quality_check_report, name='save_quality_check_report'),
     path('get_saved_details/', views.get_saved_details, name='get_saved_details'),
     path('get_conn_name/', views.get_conn_name, name='get_conn_name'),
+    path('connect_db_with_conn_name/', views.connect_db_with_conn_name, name='connect_db_with_conn_name'),
 
 
 ]
