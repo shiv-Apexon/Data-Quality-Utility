@@ -17,38 +17,10 @@
     <!-- Select2 CSS for searchable dropdowns -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+    <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
 
     <style>
-        /* Style the scrollbar track (the background of the scrollbar) */
-        ::-webkit-scrollbar {
-            width: 5px;
-            /* Adjust the width of the scrollbar */
-            height: 12px;
-            /* Adjust the height of horizontal scrollbar */
-        }
-
-        /* Style the scrollbar track (where the thumb moves) */
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            /* Light gray background for the track */
-        }
-
-        /* Style the scrollbar thumb (the draggable part of the scrollbar) */
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(45deg, #0d6efd, #0056b3);
-            /* Blue gradient */
-            border-radius: 10px;
-            /* Optional: rounded corners */
-        }
-
-        /* Style when the user hovers over the thumb */
-        ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(45deg, #0d6efd, #0056b3);
-            /* Blue gradient */
-        }
-
         a {
             text-decoration: none;
             color: var(--text-color);
@@ -135,10 +107,6 @@
             <div class="mb-3">
                 <select class="form-select" id="dropdownConnectionButton" style="width: 100%" required>
                     <option value="" selected disabled>Select a Connection</option>
-                    <!-- <option value="MySQL" class="text-black">MySQL</option>
-                    <option value="Microsoft SQL Server" class="text-black">Microsoft SQL Server</option>
-                    <option value="PostgreSQL" class="text-black">PostgreSQL</option>
-                    <option value="Google BigQuery" class="text-black">Google BigQuery</option> -->
                 </select>
             </div>
             
