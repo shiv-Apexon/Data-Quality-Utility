@@ -1,0 +1,667 @@
+{% extends 'QCA\base.html' %}
+{% load static %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Database, Table, and Columns</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Select2 CSS for searchable dropdowns -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+
+    <style>
+        a {
+            text-decoration: none;
+            color: var(--text-color);
+        }
+
+        a:hover {
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
+        a:active {
+            color: var(--text-color);
+        }
+
+        a:visited {
+            color: var(--text-color);
+
+        }
+
+        input.form-check-input[type="checkbox"] {
+            cursor: pointer;
+        }
+
+        /* Scrollable Div for tables and columns */
+        #tables_list,
+        #columns_list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        dialog {
+            position: fixed;
+            top: 53%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            width: clamp(220px, 70vw, 611px);
+            border-radius: 9px;
+            height: clamp(200px, 89vh, 90vh);
+            resize: both;
+            overflow: auto;
+            padding: 5px;
+            border: none;
+            box-shadow: 0px 155px 62px rgba(0, 0, 0, 0.01), 0px 87px 52px rgba(0, 0, 0, 0.05), 0px 39px 39px rgba(0, 0, 0, 0.09), 0px 10px 21px rgba(0, 0, 0, 0.1), 0px 0px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        dialog::backdrop {
+            background-color: rgba(0, 0, 0, 0.45);
+            z-index: 1000;
+        }
+
+        .dropdown-toggle:focus {
+            box-shadow: 0 0 4px 2px rgba(0, 123, 255, 0.849);
+            /* Optional: adds a soft glow effect */
+        }
+    </style>
+</head>
+
+<body>
+    <nav aria-label="breadcrumb" class="mt-2 mx-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item fw-bold"><a href="/" style="color: #1656a2;">Home</a></li>
+            <li class="breadcrumb-item fw-bold"><a href="/dataqualityhome" style="color: #1656a2;">Config DQ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Save Metadata</li>
+        </ol>
+    </nav>
+    <div class=" shadow-sm mt-2 bg-body-tertiary rounded border-top border-3  border-primary mb-3 mx-3">
+        <div class="bg-secondary-subtle px-3 py-1">
+            <i class="bi bi-plug-fill fs-5 fw-bold mt-1 "></i>
+            <span>Use Connector</span>
+        </div>
+
+        <div
+            class=" d-flex flex-column flex-sm-row justify-content-start gap-3 my-2 mx-2 px-2 pb-4 rounded-1 pt-2 border border-1 shadow-sm">
+            <div class="mb-3">
+                <select class="form-select" id="dropdownPlatformButton" style="width: 100%" required>
+                    <option value="" selected disabled>Select a Platform</option>
+                    <option value="mysql" class="text-black">MySQL</option>
+                    <option value="mssql" class="text-black">Microsoft SQL Server</option>
+                    <option value="PostgreSQL" class="text-black">PostgreSQL</option>
+                    <option value="Google BigQuery" class="text-black">Google BigQuery</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <select class="form-select" id="dropdownConnectionButton" style="width: 100%" required>
+                    <option value="" selected disabled>Select a Connection</option>
+                </select>
+            </div>
+
+        </div>
+        <div class="border border-1 shadow-sm m-2 p-2 rounded-1" id="set_metadeta" style="display: none;">
+            <div class=" d-flex justify-content-between  ">
+                <h2>Select Database, Table, and Columns</h2>
+                <button id="close_connection_btn" type="button" class="btn btn-primary"
+                    style="height: 40px; flex-shrink: 0;">Close Connection</button>
+            </div>
+            <div class="d-flex justify-content-start gap-3 align-items-center">
+                <!-- Database Dropdown (Searchable) -->
+                <div class="mb-3 mx-3">
+                    <label for="db_select" class="form-label fw-bold">Select Database</label>
+                    <select class="form-select" id="db_select" style="width: 100%;" required>
+                        <option value="" selected disabled>Select a Database</option>
+                        {% for db, tables in db_tables.items %}
+                        <option value="{{ db }}">{{ db }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Tables Dropdown (Searchable, Initially Hidden) -->
+                <div class="mb-3" id="tables_section" style="display:none;">
+                    <label for="table_select" class="form-label fw-bold">Select Table</label>
+                    <select class="form-select" id="table_select" style="width: 100%" required multiple='multiple'>
+                        <option value="" selected disabled>Select a Table</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Columns Section (Initially Hidden) -->
+            <div id="columns_section" style="display:none;">
+                <h3>Columns in the Selected Table:</h3>
+                <div id="columns_list"></div>
+            </div>
+
+
+            <!-- Submit Button (Initially Disabled) -->
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary" id="submit_btn"
+                    onclick="document.getElementById('report_area').style.display = 'block'; document.getElementById('report_area').showModal();">Generate
+                    Report</button>
+                <button type="submit" class="btn btn-primary" id="save_columns">Save </button>
+
+            </div>
+        </div>
+    </div>
+    <dialog id="report_area">
+        <button class="btn btn-primary position-absolute bottom-0 mb-3" id="closeModalBtn"
+            onclick="document.getElementById('report_area').close(); document.getElementById('report_area').style.display = 'none';">Close</button>
+    </dialog>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function selectPlatform(PlatformName) {
+            document.getElementById("dropdownPlatformButton").innerText = PlatformName;
+        }
+        function selectConnection(connectionName) {
+            document.getElementById("dropdownConnectionButton").innerText = connectionName;
+        }
+
+        // Get references to the select elements and the div 
+        const dropdownPlatformSelect = document.getElementById('dropdownPlatformButton');
+        const dropdownConnectionSelect = document.getElementById('dropdownConnectionButton');
+        const targetDiv = document.getElementById('set_metadeta');
+
+        // Function to check the selected values and toggle visibility of the div
+        function toggleDivVisibility() {
+            console.log("--- Platform selected:", dropdownPlatformSelect.value);
+            console.log("--- Connection selected:", dropdownConnectionSelect.value);
+
+            if (dropdownPlatformSelect.value !== "" && dropdownConnectionSelect.value !== "") {
+                targetDiv.style.display = 'block'; // Show the div
+            } else {
+                targetDiv.style.display = 'none'; // Hide the div
+            }
+        }
+
+        // Add event listeners to select elements to check values when changed
+        dropdownPlatformSelect.addEventListener('change', toggleDivVisibility);
+        dropdownConnectionSelect.addEventListener('change', toggleDivVisibility);
+
+        // Initial check to hide/show the div on page load
+        toggleDivVisibility();
+
+    </script>
+
+    <script>
+
+
+        // Event listener for platform selection change
+        document.getElementById("dropdownPlatformButton").addEventListener("change", function () {
+            const platform = this.value;  // Get the selected platform
+            if (platform) {
+                // Send AJAX request to Django view
+                fetch(`/get_conn_name/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ platform: platform }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        const connectionDropdown = document.getElementById("dropdownConnectionButton");
+                        connectionDropdown.innerHTML = '<option value="" selected disabled>Select a Connection</option>'; // Reset options
+
+                        // Populate the connection options based on the selected platform
+                        data.connections.forEach(conn => {
+                            const option = document.createElement("option");
+                            option.value = conn;
+                            option.textContent = conn;
+                            connectionDropdown.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching connections:', error));
+            }
+        });
+
+
+
+
+        document.getElementById("dropdownConnectionButton").addEventListener("change", function () {
+            const conn_name = this.value;  // Get the selected platform
+            if (conn_name) {
+                // Send AJAX request to Django view
+                fetch(`/connect_db_with_conn_name/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ conn_name: conn_name }),
+                })
+                    .then(response => response.json())
+                    .then(console.log(response))
+
+
+            }
+        });
+
+
+
+
+
+
+
+
+        // Initialize Select2 for the dropdowns
+        $(document).ready(function () {
+            // Initialize Select2 on the select elements
+            $('#db_select').select2();
+            $('#table_select').select2(); // This will now handle multi-select automatically after we add 'multiple' attribute
+        });
+
+        // When a database is selected
+        $('#db_select').change(function () {
+            var dbName = $(this).val();
+
+            if (dbName) {
+                // Show the tables section and reset the tables dropdown
+                $('#tables_section').show();
+                $('#columns_section').hide();
+                $('#columns_list').html('');
+
+                // Reset the table options (allow multiple selections)
+                $('#table_select').html('<option value="" disabled>Select a Table</option>'); // Reset table options
+
+                // Fetch tables for the selected database via AJAX
+                $.ajax({
+                    url: "{% url 'get_tables' %}",
+                    type: "GET",
+                    data: { 'db_name': dbName },
+                    success: function (data) {
+                        // Append tables to the tables dropdown
+                        var tables = data.tables;
+                        if (tables.length > 0) {
+                            // Loop through the tables and append each one as an option
+                            tables.forEach(function (table) {
+                                $('#table_select').append('<option value="' + table + '">' + table + '</option>');
+                            });
+
+                            // Initialize or re-initialize Select2 for the multi-select
+                            $('#table_select').select2(); // Ensure it works after dynamically adding options
+                        }
+                        else {
+                            // Show a message when there are no tables
+                            $('#table_select').html('<p>No tables available</p>');
+                        }
+                    }
+                });
+            } else {
+                // Hide the tables section if no database is selected
+                $('#tables_section').hide();
+                $('#columns_section').hide();
+            }
+        });
+
+
+
+        function getSavedDetails(dbName, tableName, column) {
+            // Fetch saved details for the selected database (this should include the selected checkboxes)
+            console.log("Called get saved details");
+
+            $.ajax({
+                url: "{% url 'get_saved_details' %}", // URL to fetch saved checkboxes selections
+                type: "GET",
+                data: {
+                    'db_name': dbName,  // Send database name to fetch saved selections
+                    'db_table': tableName  // Send table name to fetch saved selections
+                },
+                success: function (data) {
+                    // Loop through all the tables in saved_details
+                    for (var tableName in data.saved_details) {
+                        if (data.saved_details.hasOwnProperty(tableName)) {
+                            // Loop through each column in the current table
+                            for (var column in data.saved_details[tableName]) {
+                                var selectedValues = data.saved_details[tableName][column];
+                                console.log("----------", selectedValues);
+
+                                if (selectedValues != undefined) {
+                                    console.log("---------------------------------------------");
+                                    console.log(selectedValues);
+                                    console.log("---------------------------------------------");
+
+                                    // Loop through the selected values and check the corresponding checkboxes
+                                    selectedValues.forEach(function (value) {
+                                        switch (value) {
+                                            case "NULL":
+                                                $('#null_type_' + tableName + '_' + column).prop('checked', true);
+                                                break;
+                                            case "STRING":
+                                                $('#string_type_' + tableName + '_' + column).prop('checked', true);
+                                                break;
+                                            case "NUMBER":
+                                                $('#number_type_' + tableName + '_' + column).prop('checked', true);
+                                                break;
+                                            case "DATE":
+                                                $('#date_type_' + tableName + '_' + column).prop('checked', true);
+                                                break;
+                                            case "BOOLEAN":
+                                                $('#boolean_type_' + tableName + '_' + column).prop('checked', true);
+                                                break;
+                                            case "UNIQUE":
+                                                $('#unique_type_' + tableName + '_' + column).prop('checked', true);
+                                                break;
+                                            // Add more cases if other types are present
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }
+                },
+                error: function (error) {
+                    console.log("Error fetching saved details: ", error);
+                }
+
+            });
+        }
+
+
+
+
+
+
+
+        $('#table_select').change(function () {
+            var dbName = $('#db_select').val();  // Get selected database
+            var selectedTables = $('#table_select').val();  // Get selected tables (array of table names)
+
+            if (selectedTables.length > 0) {
+                $('#columns_section').show();
+                $('#columns_list').html('');
+                // Example AJAX request with response data in the format you shared
+                $.ajax({
+                    url: "{% url 'get_columns_and_types' %}",  // URL to your Django view
+                    type: "GET",
+                    data: {
+                        'db_name': dbName,
+                        'table_name[]': selectedTables  // Send selected table names as an array
+                    },
+                    success: function (data) {
+                        var tableAndColumns = data.table_and_columns;  // Get the table and columns data
+                        console.log(tableAndColumns);
+
+                        // Loop through each table (e.g., 'column_types', 'employee_details')
+                        for (var tableName in tableAndColumns) {
+                            var tableData = tableAndColumns[tableName];
+
+                            // Create a new table container for each table
+                            var tableSection = $('<div class="table-section mt-1" id="table_' + tableName + '" >');
+                            tableSection.append('<div class = "mt-1"> &nbsp;</div>');  // Add table name
+
+                            // Create the table and its header
+                            var table = $('<table class = "table table-bordered table-hover shadow p-3 mb-5 bg-body-tertiary">');
+                            var thead = $('<thead>').append('<tr>');
+
+                            // Add the check name headings to the table
+                            var headings = [tableName, 'Data Type', 'NULL Values', 'STRING', 'NUMBER', 'DATE', 'BOOLEAN', 'UNIQUE'];
+                            headings.forEach(function (heading) {
+                                thead.append(`<th class="border p-2 fw-bold">${heading}</th>`);
+                            });
+
+                            table.append(thead);
+                            var tbody = $('<tbody class = "">');  // Table body for columns
+
+                            // Loop through each column and create a row with checkboxes
+                            for (var column in tableData) {
+                                var enabledChecksForColumn = tableData[column]['valid_types'];  // Get the enabled checks for this column
+                                console.log("enabledChecksForColumn", enabledChecksForColumn)
+                                var row = $('<tr>');
+
+                                // Add the column name as the first cell
+                                row.append(`<td>${column}</td>`);
+
+                                // Add the datatype as the second cell
+                                var dataType = 'Unknown';  // Default value
+                                // Assuming 'datatype' is a key in the backend data for each column (if available)
+                                if (tableData[column]['data_type']) {
+                                    dataType = tableData[column]['data_type'];  // If 'datatype' is available, use it
+                                }
+                                row.append(`<td>${dataType}</td>`);
+
+                                // Add the checkboxes for each data type in the following cells
+                                var checkboxesHTML = '';
+                                var headingsMapping = {
+                                    'NULL Values': 'NULL',
+                                    'STRING': 'STRING',
+                                    'NUMBER': 'NUMBER',
+                                    'DATE': 'DATE',
+                                    'BOOLEAN': 'BOOLEAN',
+                                    'UNIQUE': 'UNIQUE'
+                                };
+
+                                // Add checkboxes for each type (NULL, STRING, NUMBER, etc.)
+                                for (var heading in headingsMapping) {
+                                    var checkType = headingsMapping[heading];
+                                    var checkboxId = `${checkType.toLowerCase()}_type_${tableName}_${column}`;
+                                    var isEnabled = enabledChecksForColumn.includes(checkType);  // Check if the heading is enabled for this column
+
+                                    checkboxesHTML += `
+                                    <td>
+                                        <div class="form-check">
+                                            <input class="form-check-input border-dark" type="checkbox" value="${checkType}" id="${checkboxId}" ${isEnabled ? '' : 'disabled'}>
+                                        </div>
+                                    </td>
+                                `;
+                                }
+
+                                // Append the checkboxes to the row
+                                row.append(checkboxesHTML);
+
+                                // Append the row to the table body
+                                tbody.append(row);
+                            }
+
+                            // Append the table body to the table
+                            table.append(tbody);
+
+                            // Append the table to the table section
+                            tableSection.append(table);
+
+                            // Append the table section to the DOM
+                            $('#columns_list').append(tableSection);
+                        }
+                        getSavedDetails(dbName, tableName, column);  // Call saved details function
+                    },
+                    error: function (error) {
+                        console.log("Error fetching columns:", error);
+                    }
+                });
+
+            }
+        });
+
+
+
+
+
+
+        function saveColumnDetails() {
+            // Prepare the data object to hold database name, tables, columns, and selected types
+            var reportData = {};
+
+            // Get the database name (you may need to update this to get it dynamically, if necessary)
+            var dbName = $('#db_select').val(); // Assuming you have a field for the database name
+
+            // Add database name to the report data
+            reportData.db_name = dbName;
+
+            // Iterate over the table sections
+            $('.table-section').each(function () {
+                var tableName = $(this).find('th').first().text(); // Get the table name
+                var columns = {};
+
+                // Iterate over each column in the table section
+                $(this).find('table tbody tr').each(function () {
+                    var columnName = $(this).find('td:first').text(); // Get column name (first cell)
+                    var selectedTypes = [];
+
+                    // Check which checkboxes are selected for this column
+                    $(this).find('.form-check-input:checked').each(function () {
+                        var typeValue = $(this).val(); // Get the value of the checked checkbox
+                        selectedTypes.push(typeValue); // Add selected type to array
+                    });
+
+                    // If no checkboxes are selected, we don't need to include the column
+                    if (selectedTypes.length > 0) {
+                        // Add the column's selected types to the columns object
+                        columns[columnName] = selectedTypes;
+                    }
+                });
+
+                // If the table has any selected columns, add it to the reportData object
+                if (Object.keys(columns).length > 0) {
+                    reportData[tableName] = columns;
+                }
+            });
+
+            // Send the gathered data via an AJAX request
+            $.ajax({
+                url: '/save_column_details/',  // Your Django view URL for saving the column details
+                type: 'POST',
+                data: {
+                    report_data: JSON.stringify(reportData),  // Send the reportData object as a JSON string
+                    csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()  // CSRF token for security
+                },
+                success: function (response) {
+                    // Handle the server response here (e.g., display a success message)
+                    console.log('Column details saved successfully:', response);
+                    alert('Column details saved successfully!');
+                },
+                error: function (xhr, status, error) {
+                    // Handle the error response here (e.g., display an error message)
+                    console.log('Error saving column details:', error);
+                    alert('Error saving column details: ' + error);
+                }
+            });
+        }
+
+        // Attach the saveColumnDetails function to the submit button
+        $('#save_columns').on('click', function (event) {
+            event.preventDefault();  // Prevent default form submission (if any)
+            saveColumnDetails();  // Call the function to save the column details
+        });
+
+
+
+
+
+
+        function generateReport() {
+            // Prepare the data object to hold database name, tables, columns, and selected types
+            var reportData = {};
+
+            // Get the database name (you may need to update this to get it dynamically, if necessary)
+            var dbName = $('#db_select').val(); // Assuming you have a field for the database name
+
+            // Add database name to the report data
+            reportData.db_name = dbName;
+
+            // Iterate over the table sections
+            $('.table-section').each(function () {
+                var tableName = $(this).find('th').first().text(); // Get the table name
+                var columns = {};
+
+                // Iterate over each column in the table section
+                $(this).find('table tbody tr').each(function () {
+                    var columnName = $(this).find('td:first').text(); // Get column name (first cell)
+                    var selectedTypes = [];
+
+                    // Check which checkboxes are selected for this column
+                    $(this).find('.form-check-input:checked').each(function () {
+                        var typeValue = $(this).val(); // Get the value of the checked checkbox
+                        selectedTypes.push(typeValue); // Add selected type to array
+                    });
+
+                    // If no checkboxes are selected, we don't need to include the column
+                    if (selectedTypes.length > 0) {
+                        // Add the column's selected types to the columns object
+                        columns[columnName] = selectedTypes;
+                    }
+                });
+
+                // If the table has any selected columns, add it to the reportData object
+                if (Object.keys(columns).length > 0) {
+                    reportData[tableName] = columns;
+                }
+            });
+
+            // Send the gathered data via an AJAX request
+            $.ajax({
+                url: '/generate_report/',  // Replace with your Django view URL
+                type: 'POST',
+                data: {
+                    report_data: JSON.stringify(reportData),  // Send the reportData object as a JSON string
+                    csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()  // CSRF token for security
+                },
+                success: function (response) {
+                    $('#report_area').html(response.report);
+
+                    // Handle the server response here (e.g., display the report)
+                    console.log('Report generated successfully:', response);
+                },
+                error: function (xhr, status, error) {
+                    console.log('Error generating report:', error);
+                }
+            });
+        }
+
+        // Attach the generateReport function to the submit button
+        $('#submit_btn').on('click', function (event) {
+            event.preventDefault();  // Prevent default form submission (if any)
+            generateReport();  // Call the function to generate the report
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        $('#close_connection_btn').click(function () {
+            $.ajax({
+                type: 'POST',
+                url: '{% url "close_connection" %}',  // Django URL to close the connection
+                data: { 'action': 'close' },
+                success: function (response) {
+                    alert(response.message);  // Alert the user about the connection status
+
+                    // Redirect to the new URL received from the server
+                    window.location.href = response.redirect_url;
+                },
+                error: function () {
+                    alert('Error closing the connection.');
+                }
+            });
+        });
+
+
+    </script>
+
+
+    {% endblock %}
+
+</body>
+
+</html>

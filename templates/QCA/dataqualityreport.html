@@ -1,0 +1,33 @@
+{% extends 'QCA\base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div>
+    <div class="ic4_data_section_heading d-flex align-items-end p-3 bg-body-tertiary">
+        <img src="{% static 'src/logo.png' %}" height="24px" width="24px" alt="">
+        <span class="mx-3 fw-normal fs-5">Execution & Reporting</span>
+    </div>
+
+    <div class="d-flex flex-column flex-lg-row mt-lg-2 my-lg-4 px-3 pt-2">
+        <div class="ic4_data_section_cards_holder d-flex gap-4 gap-lg-3 w-lg-50 w-75 justify-content-between">
+            <div class="ic4_data_section_cards p-sm-3 p-2" id="connector_div">
+                <img src="{% static 'src/data-report.png' %}" alt="Img" class="">
+                <div class="mt-1">Report</div>
+            </div>
+        </div>
+
+        <div class="ic4_data_section_right_info d-flex w-lg-50 w-75 mt-lg-0 mt-5 p-3">
+            <div class="w-100">
+                <h4 class="border-bottom pb-2">Reporting Guide</h4>
+                <h6 class="fw-normal">Report</h6>
+                <p class="ic4_data_section_right_info_data">***The report offers a thorough analysis of data quality,
+                    covering completeness, accuracy, consistency, uniqueness, and timeliness. It identifies issues like
+                    missing values, duplicates, and rule violations, while providing recommendations for improvement.
+                    The goal is to ensure the data is reliable, trustworthy, and ready for analysis.</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
