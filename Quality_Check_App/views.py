@@ -232,6 +232,36 @@ def connect_db_with_conn_name(request):
 
     return JsonResponse({"error": "Invalid request method."}, status=405)
 
+def get_all_connections(request):
+        # Retrieve the connection name from the POST request
+
+        
+            try:
+                db_config = request.session.get('db_config')
+                db_host = db_config['host']
+                db_user = db_config['username']
+                db_password = db_config['password'] 
+
+                conn = pymysql.connect(host=db_host, user=db_user, password=db_password)
+                cursor = conn.cursor()
+                
+                with conn.cursor() as cursor:
+                    query = '''
+                        SELECT connection_name,platform,db_name,host
+                        FROM dq.connection_info
+                    '''
+                    cursor.execute(query)
+                    result = cursor.fetchall()
+                    print("----------",result)
+            except Exception as e:
+                result = []
+                print(f"Error fetching data: {e}")
+            
+            context = {
+                'connections': result,
+            }    
+            print(context)       
+            return render(request, "QCA/connection_table.html",context)
 
 
 

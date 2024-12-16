@@ -6,7 +6,7 @@ urlpatterns = [
     path("connect-db/", views.connect_db, name="connect-db"),
     path("dq_report_home/", views.dq_report_home, name="dq_report_home"),
     path("dataqualityhome/select_platform", views.select_platform, name="select_platform"),
-
+    path("dataqualityhome/view_edit_connection", views.get_all_connections, name="get_all_connections"),
     path("dataqualityhome/db_info/", views.db_info, name="db_info"),
     path('get_tables/', views.get_tables, name='get_tables'),
     path('get_columns_and_types/', views.get_columns_and_types, name='get_columns_and_types'),

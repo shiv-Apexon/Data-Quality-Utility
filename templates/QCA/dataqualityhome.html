@@ -7,17 +7,17 @@
 <div>
     <div class="ic4_data_section_heading d-flex align-items-end p-3 bg-body-tertiary">
         <img src="{% static 'src/logo.png' %}" height="24px" width="24px" alt="">
-        <span class="mx-3 fw-normal fs-5">Data Quality</span>
+        <span class="mx-3 fw-normal fs-5">Setup DQ Environment</span>
     </div>
 
-    <div class="d-flex flex-column flex-lg-row mt-lg-2 my-lg-4 px-3">
+    <div class="d-flex flex-column flex-lg-row mt-lg-2 my-lg-4 px-3 pt-2">
         <div class="ic4_data_section_cards_holder d-flex gap-4 gap-lg-3 w-lg-50 w-75 justify-content-start">
             <div class="ic4_data_section_cards p-sm-3 p-2" id="connector_div">
-                <img src="{% static 'src/logo.png' %}" alt="">
+                <img src="{% static 'src/mind-mapping.png' %}" alt="">
                 <div class="mt-1">Establish Connection</div>
             </div>
-            <div class="ic4_data_section_cards p-sm-3 p-2" id = "configure_db">
-                <img src="{% static 'src/logo.png' %}" alt="">
+            <div class="ic4_data_section_cards p-sm-3 p-2" id="configure_db">
+                <img src="{% static 'src/setting.png' %}" alt="">
                 <div class="mt-1">Configure DQ</div>
             </div>
             <div class="ic4_data_section_cards p-sm-3 p-2 visually-hidden">
@@ -29,34 +29,55 @@
         <div class="ic4_data_section_right_info d-flex w-lg-50 w-75 mt-lg-0 mt-5">
             <div class="w-100">
                 <h4 class="border-bottom pb-2">Guide</h4>
-                <h6 class="fw-normal">Connector</h6>
-                <p class="ic4_data_section_right_info_data">Configure reusable and secure connection with
+                <h6 class="fw-normal">Establish connection</h6>
+                <p class="ic4_data_section_right_info_data">
+                    <!-- Configure reusable and secure connection with
                     the data source. Use the connection for data and metadata extraction. Supported
-                    connections - Database. File system, cloud</p>
-                <h6 class="fw-normal">Register</h6>
-                <p class="ic4_data_section_right_info_data">Registration is the process of defining the
-                    source data.Describe the data types and formats. Register the source file as an object
-                    to the data lake and access it with the registered object name for data ingestion and
-                    consumption.</p>
-                <h6 class="fw-normal">Data Quality</h6>
+                    connections - Database. File system, cloud -->
+                    Establish secure and reusable connections to various data sources like databases, file systems, and
+                    cloud services. These connections enable seamless data and metadata extraction and can be reused in
+                    the DQ configuration section for consistent and efficient data management. By utilizing these
+                    pre-configured connections, you ensure secure and optimized access to your data resources across
+                    different platforms.
+                </p>
+                <h6 class="fw-normal">Configure DQ</h6>
                 <p class="ic4_data_section_right_info_data">Data Quality at Source ensures that the data is
                     accurate,complete, consistent, and valid right when it is captured or generated. This
                     minimizes the propagation of errors and ensures reliable data throughout its lifecycle.
                 </p>
+                <div class="alert alert-info mt-4 alert-dismissible fade show" role="alert">
+                    <h6 class="fw-normal">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+                            <symbol id="info-fill" viewBox="0 0 16 16">
+                                <path
+                                    d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
+                            </symbol>
+                        </svg>
+                        <svg class="bi flex-shrink-0 me-1" role="img" aria-label="Info:">
+                            <use xlink:href="#info-fill" />
+                        </svg>
+                        Note:
+                    </h6>
+                    <p class="fs-6">
+                        Once the connection has been established, you can proceed to the "Configure DQ" section to
+                        utilize the newly established connection for Data Quality configuration.
+                    </p>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
             </div>
         </div>
 
     </div>
 </div>
 <script>
-            document.getElementById('connector_div').addEventListener('click', function () {
-            // Redirect to another HTML page within the same project
-            window.location.href = 'select_platform';  // Replace 'next_page.html' with your target HTML file
-        });
-        document.getElementById('configure_db').addEventListener('click', function () {
-            // Redirect to another HTML page within the same project
-            window.location.href = 'db_info';  // Replace 'next_page.html' with your target HTML file
-        });
+    document.getElementById('connector_div').addEventListener('click', function () {
+        // Redirect to another HTML page within the same project
+        window.location.href = 'select_platform';  // Replace 'next_page.html' with your target HTML file
+    });
+    document.getElementById('configure_db').addEventListener('click', function () {
+        // Redirect to another HTML page within the same project
+        window.location.href = 'db_info';  // Replace 'next_page.html' with your target HTML file
+    });
 </script>
 
 {% endblock %}
