@@ -2,9 +2,6 @@ import mysql.connector
 from mysql.connector import Error
 from django.shortcuts import render,redirect
 from django.http import HttpResponse
-import pyodbc
-from win10toast import ToastNotifier
-import pyodbc # For MSSQL
 import pymysql # For MySQL
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -23,7 +20,7 @@ CHECK_TYPE_MAP = {
 }
 
 
-toaster = ToastNotifier()
+
 
 def index(request):
     return render(request, 'QCA/home.html')
@@ -124,54 +121,22 @@ def connect_db(request):
                     # Commit the transaction
                     connection.commit()
                     message = "Successfully connected to the database!"
-                    toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
+             
 
                     return redirect('/dataqualityhome')                    
 
                 else:
                     message = "Failed to connect to the database."
-                    toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
+           
 
                 connection.close()
 
             except Error as e:
                 # If there is an error, send an appropriate message
                 message = f"Error: {e}"
-                toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
-
-
-        elif db_engine == 'mssql':
-            try:
-
-                # Use pyodbc for MSSQL
-                conn_str = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={host};UID={username};PWD={password}'
-                conn = pyodbc.connect(conn_str)
-                if conn :
-                    # Save connection info in the session
-                    request.session['db_config'] = {
-                        'host':host,
-                        'username':username,
-                        'password':password,
-                        'db_engine':db_engine,
-                        'db_name': None
-                        }
-
-                    message = "Successfully connected to the database!"
-                    toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
-                    return redirect('db_info') 
-
-                else:
-                    message = "Failed to connect to the database."
-                    toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
-                conn.close()
-            except Error as e:
-                # If there is an error, send an appropriate message
-                message = f"Error: Connection Failed"
-                toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
-        
+         
         else:
             message = "Other RDBMS are not available yet"
-            toaster.show_toast("Connection Status", message, duration=2) 
             return render(request, 'QCA/index.html', {'message': message})
 
     return render(request, 'QCA/index.html', {'message': message})
@@ -275,7 +240,6 @@ def db_info(request):
     db_config = request.session.get('db_config')
     if not db_config:
         message = "Connection is not Established."
-        toaster.show_toast("Connection Status", message, duration=2) 
         return redirect('/dataqualityhome')
 
     host = db_config['host']
@@ -287,19 +251,7 @@ def db_info(request):
 
     try:
         # Connect to the database dynamically based on the engine
-        if engine == "mssql":
-            conn = pyodbc.connect(
-                f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={host};UID={user};PWD={password}"
-            )
-            cursor = conn.cursor()
-            cursor.execute("SELECT name FROM sys.databases")
-            databases = [row[0] for row in cursor.fetchall()]
-
-            for db in databases:
-                cursor.execute(f"USE {db}; SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';")
-                db_tables[db] = [row[0] for row in cursor.fetchall()]
-
-        elif engine == "mysql":
+        if engine == "mysql":
             conn = pymysql.connect(host=host, user=user, password=password)
             cursor = conn.cursor()
             cursor.execute("SHOW DATABASES")
@@ -316,7 +268,7 @@ def db_info(request):
     except Error as e:
                 # If there is an error, send an appropriate message
                 message = f"Error fetching databases or tables"
-                toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
+                
                 return render(request, "databases.html", {"message": message})
     # Render the result
     return render(request, "QCA/db_info.html", {"db_tables": db_tables})
@@ -344,23 +296,6 @@ def get_tables(request):
                 cursor.execute("SHOW TABLES")
                 tables = [row[0] for row in cursor.fetchall()]
                 conn.close()
-
-            elif engine == "mssql":
-                host = db_config['host']
-                user = db_config['username']
-                password = db_config['password']
-                engine = db_config['db_engine']
-                # Connect to MS SQL Server
-                conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};'
-                                      'SERVER={host};'
-                                      f'DATABASE={db_name};'
-                                      'UID={user};'
-                                      'PWD={password}')
-                cursor = conn.cursor()
-                cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE'")
-                tables = [row[0] for row in cursor.fetchall()]
-                conn.close()
-
             # Add other database engines here (PostgreSQL, SQLite, etc.) as needed.
 
         except Exception as e:
@@ -456,18 +391,6 @@ def close_connection(request):
                 conn.close()
                 request.session.clear() 
                 # Return a JSON response with the redirect URL
-                return JsonResponse({'redirect_url': '/dataqualityhome'})
-    elif engine == "mssql":
-                host = db_config['host']
-                user = db_config['username']
-                password = db_config['password']
-                # Connect to MS SQL Server
-                conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};'
-                                      'SERVER={host};'
-                                      'UID={user};'
-                                      'PWD={password}')
-                conn.close()
-                request.session.clear() 
                 return JsonResponse({'redirect_url': '/dataqualityhome'})
 
 
