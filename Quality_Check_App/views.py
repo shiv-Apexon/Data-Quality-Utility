@@ -23,7 +23,7 @@ CHECK_TYPE_MAP = {
 
 
 def index(request):
-    return render(request, 'QCA/home.html')
+    return render(request, 'QCA/Home.html')
 
 def data_quality_home(request):
         return render(request, 'QCA/dataqualityhome.html')
