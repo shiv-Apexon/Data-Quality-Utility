@@ -234,6 +234,92 @@
             font-size: 11px;
         }
 
+        /* loader */
+        .loader_holder {
+            /* display: none; */ 
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            display: flex;
+        }
+
+        .loader_holder::after {
+            content: "Loading...";
+            position: relative;
+            color: white;
+            top: 50px;
+            left: 20px;
+
+        }
+
+        .loader {
+            width: 30px;
+            height: 30px;
+            position: absolute;
+            border: 4px solid #Fff;
+            top: 50%;
+            left: 50%;
+            animation: loader 2s infinite ease;
+        }
+
+        .loader-inner {
+            vertical-align: top;
+            display: inline-block;
+            width: 100%;
+            background-color: #fffdfd;
+            animation: loader-inner 2s infinite ease-in;
+        }
+
+        @keyframes loader {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            25% {
+                transform: rotate(180deg);
+            }
+
+            50% {
+                transform: rotate(180deg);
+            }
+
+            75% {
+                transform: rotate(360deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes loader-inner {
+            0% {
+                height: 0%;
+            }
+
+            25% {
+                height: 0%;
+            }
+
+            50% {
+                height: 100%;
+            }
+
+            75% {
+                height: 100%;
+            }
+
+            100% {
+                height: 0%;
+            }
+        }
+
         /* media */
 
         /* data section */
@@ -329,7 +415,8 @@
                         </div> -->
                         <div class="input-group w-75">
                             <input type="text" class=" form-control rounded-start-0" placeholder="Search"
-                                aria-label="Recipient's username" aria-describedby="button-addon2">
+                                aria-label="Recipient's username" aria-describedby="button-addon2"
+                                style="box-shadow: none;">
                             <button class="btn btn-light border-0 rounded-end-1" type="button" id="button-addon2"><i
                                     class="bi bi-search"></i></button>
                         </div>
@@ -360,10 +447,31 @@
                 </div>
             </div> -->
         </div>
+        <div class="loader_holder">
+            <span class="loader">
+                <span class="loader-inner"></span>
+            </span>
+        </div>
 
     </main>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // window.onload = function () {
+        //     var loaderHolder = document.querySelector('.loader_holder');
+        //     loaderHolder.style.display = 'none';
+        // };
+
+        document.onreadystatechange = function () {
+            if (document.readyState !== "complete") {
+            document.querySelector('.loader_holder').style.display = 'flex';
+            } else {
+            document.querySelector('.loader_holder').style.display = 'none';
+            }
+        };
+    </script>
+    
     <script>
         document.querySelector('.ic4_hamburger_triger').addEventListener('click', function () {
             var sidebar = document.querySelector('.ic4_sidebar');
