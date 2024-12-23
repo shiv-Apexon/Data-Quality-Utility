@@ -23,7 +23,6 @@
                             <th>Column Name</th>
                             <th>Check Type</th>
                             <th>Result</th>
-
                         </tr>
                     </thead>
                     <tbody>
@@ -38,16 +37,13 @@
                             {% endfor %}
                             <tr>
                                 <td colspan="3">Total Rows</td>
- 
-                                
+                                 
                                 {% for check in checks %}
                                     {% if 'Total_Rows' in check %}
-
                                         <td>{{ check.Total_Rows }}</td>
                                     {% endif %}
   
                                 {% endfor %}
-
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -58,6 +54,7 @@
                 </div>
             </div>
         {% else %}
+
             <div class="d-flex alert alert-primary alert-dismissible align-items-center mt-4" role="alert">                <div class="d-flex">
                 <svg xmlns="http://www.w3.org/2000/svg" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2 mt-1"
                     viewBox="0 0 16 16" role="img" aria-label="Warning:">
@@ -71,6 +68,7 @@
                 </div>
             </div>
     </div>
+    
         {% endif %}
         <div class="gap-3 d-flex justify-content-between">
             <div>

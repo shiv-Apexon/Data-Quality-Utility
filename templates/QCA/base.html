@@ -218,16 +218,16 @@
             filter: grayscale(0%) saturate(135%) contrast(110%) brightness(110%);
         }
 
-        .ic4_data_section_cards_holder {
-            /* all: unset; */
-            /* height: 20vw + 15vh; */
+        /* .ic4_data_section_cards_holder {
+            all: unset;
+            height: 20vw + 15vh;
         }
 
         .ic4_data_section_right_info {
-            /* margin-left: 8vw; */
-            /* margin-left: clamp(0px, 8vw, 8vw); */
+            margin-left: 8vw;
+            margin-left: clamp(0px, 8vw, 8vw);
 
-        }
+        } */
 
         /* data section right */
         .ic4_data_section_right_info_data {
@@ -236,7 +236,7 @@
 
         /* loader */
         .loader_holder {
-            /* display: none; */ 
+            /* display: none; */
             position: fixed;
             top: 0;
             left: 0;
@@ -465,13 +465,13 @@
 
         document.onreadystatechange = function () {
             if (document.readyState !== "complete") {
-            document.querySelector('.loader_holder').style.display = 'flex';
+                document.querySelector('.loader_holder').style.display = 'flex';
             } else {
-            document.querySelector('.loader_holder').style.display = 'none';
+                document.querySelector('.loader_holder').style.display = 'none';
             }
         };
     </script>
-    
+
     <script>
         document.querySelector('.ic4_hamburger_triger').addEventListener('click', function () {
             var sidebar = document.querySelector('.ic4_sidebar');
