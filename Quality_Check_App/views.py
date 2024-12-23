@@ -22,7 +22,6 @@ CHECK_TYPE_MAP = {
     'UNIQUE':'unique values'
 }
 
-
 toaster = ToastNotifier()
 
 def index(request):
@@ -36,10 +35,8 @@ def select_platform(request):
 def dq_report_home(request):
      return render(request,'QCA/dataqualityreport.html')
 
-
 def connect_db(request):
     message = None
-
 
     if request.method == 'POST':
         # Get the user inputs (database host, username, password)
@@ -50,7 +47,6 @@ def connect_db(request):
         connection_name = request.POST.get('connection_name')
         port = request.POST.get('port')
         db_name = request.POST.get('database')
-
 
         if db_engine == 'mysql':
             try:
@@ -73,10 +69,7 @@ def connect_db(request):
 
                         }
 
-
                     cursor = connection.cursor()
-
-
 
                     create_schema_query = f"CREATE SCHEMA IF NOT EXISTS dq;"
                     create_table_query = '''
@@ -100,7 +93,6 @@ def connect_db(request):
                     # Create table if it doesn't exist
                     print("Creating table: connection_info")
                     cursor.execute(create_table_query)
-
 
                     # SQL query to insert data into the 'connection_info' table
                     insert_query = """
@@ -164,6 +156,7 @@ def connect_db(request):
                     message = "Failed to connect to the database."
                     toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
                 conn.close()
+
             except Error as e:
                 # If there is an error, send an appropriate message
                 message = f"Error: Connection Failed"
@@ -186,8 +179,6 @@ def connect_db_with_conn_name(request):
         # Access the platform value from the parsed data
         conn_name = data.get('conn_name')
 
-
-        
         if conn_name:
             try:
                 db_config = request.session.get('db_config')
@@ -241,7 +232,6 @@ def connect_db_with_conn_name(request):
 def get_all_connections(request):
         # Retrieve the connection name from the POST request
 
-        
             try:
                 db_config = request.session.get('db_config')
                 db_host = db_config['host']
@@ -259,6 +249,7 @@ def get_all_connections(request):
                     cursor.execute(query)
                     result = cursor.fetchall()
                     print("----------",result)
+
             except Exception as e:
                 result = []
                 print(f"Error fetching data: {e}")
@@ -272,7 +263,9 @@ def get_all_connections(request):
 
 
 def db_info(request):
+
     db_config = request.session.get('db_config')
+
     if not db_config:
         message = "Connection is not Established."
         toaster.show_toast("Connection Status", message, duration=2) 
@@ -325,6 +318,7 @@ def db_info(request):
 
 
 def get_tables(request):
+
     db_name = request.GET.get('db_name')
     db_config = request.session.get('db_config')
     db_config['db_name'] = db_name
@@ -370,15 +364,18 @@ def get_tables(request):
 
 # Function to get columns for a specific table in a database
 def get_columns_and_types(request):
+
     db_name = request.GET.get('db_name')
     table_name = request.GET.getlist('table_name[]')
     db_config = request.session.get('db_config')
+
     if table_name == []:
         response = get_tables(request)
         data = json.loads(response.content)  # Convert JSON string to Python dict
         table_name = data.get('tables', [])     
     engine = db_config['db_engine']
     table_and_columns={}
+
     if db_name and table_name and engine:
        
         if engine == "mysql":
@@ -441,11 +438,11 @@ def get_columns_and_types(request):
     return JsonResponse({'table_and_columns': table_and_columns})
 
 @csrf_exempt
+
 def close_connection(request):
     db_config = request.session.get('db_config')
     engine = db_config['db_engine']
 
-        
     if engine == "mysql":
                 host = db_config['host']
                 user = db_config['username']
@@ -457,6 +454,7 @@ def close_connection(request):
                 request.session.clear() 
                 # Return a JSON response with the redirect URL
                 return JsonResponse({'redirect_url': '/dataqualityhome'})
+    
     elif engine == "mssql":
                 host = db_config['host']
                 user = db_config['username']
@@ -473,6 +471,7 @@ def close_connection(request):
 
 @csrf_exempt
 def generate_report(request):
+
     if request.method == 'POST':
         db_config = request.session.get('db_config')
         engine = db_config['db_engine']
@@ -542,6 +541,7 @@ def generate_report(request):
 
 
 def generate_check_query(db_name, table_name, column_name, check_type):
+
     if check_type == 'NULL Values':
         return f"SELECT COUNT(*) FROM {db_name}.{table_name} WHERE {column_name} IS NULL OR {column_name} = '' "
     elif check_type == 'Not a String':
@@ -558,6 +558,7 @@ def generate_check_query(db_name, table_name, column_name, check_type):
         return ""
     
 def table_exists(table_name,db_name,db_config):
+
     engine = db_config['db_engine']
     if engine == 'mysql':
             host = db_config['host']
@@ -579,7 +580,6 @@ def table_exists(table_name,db_name,db_config):
 @csrf_exempt
 def save_column_details(request):
 
-     
     if request.method == "POST":
         db_config = request.session.get('db_config')
         engine = db_config['db_engine']
@@ -631,6 +631,7 @@ def save_column_details(request):
                             conn.commit()
 
                 return JsonResponse({'message': 'Column details saved successfully!'})
+            
             except Exception as e:
                 # If there's an error while inserting, return the error message
                 return JsonResponse({'error': str(e)}, status=400)
@@ -639,6 +640,7 @@ def save_column_details(request):
 
 @csrf_exempt
 def save_quality_check_report(request):
+
     db_config = request.session.get('db_config')
     engine = db_config['db_engine']
     if request.method == 'POST':
@@ -665,6 +667,7 @@ def save_quality_check_report(request):
                 try:
                     report_str = json.loads(report_str)
                     print("Report successfully loaded into a dictionary.")
+
                 except json.JSONDecodeError as e:
                     print(f"Error decoding JSON: {e}")
 
@@ -765,6 +768,7 @@ def save_quality_check_report(request):
 
         except json.JSONDecodeError:
                 return JsonResponse({'message': 'Invalid JSON data.'}, status=400)
+        
         except Exception as e:
                 return JsonResponse({'message': f'Error: {str(e)}'}, status=500)
 
@@ -819,8 +823,8 @@ def get_saved_details(request):
                             if value not in saved_details[db_table][column_name]:
                                 saved_details[db_table][column_name].append(str(value))
 
-
                 return JsonResponse({'saved_details':saved_details})
+            
         except:
             pass
 
@@ -830,6 +834,7 @@ def get_saved_details(request):
 
 @csrf_exempt
 def get_conn_name(request):
+
     data = json.loads(request.body.decode('utf-8'))
     platform = data.get('platform')
     db_config = request.session.get('db_config')
@@ -859,8 +864,8 @@ def get_conn_name(request):
                 connection_names = [conn[0] for conn in connections]
                 
                 return JsonResponse({"connections": connection_names})
+            
         except Exception as e:
                 return print({'message': f'Error: {str(e)}'}, status=500)
-    else:
-            
+    else:  
             return JsonResponse({"connections": []}, status=400)  # If no platform selected, return an empty list
