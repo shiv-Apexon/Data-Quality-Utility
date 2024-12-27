@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-^4==b%chdpx%ef#0lsc7bwhesx#9wn13@i&2@se5h_z%fhgikr'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'Quality_Check_App',
 ]
 
 MIDDLEWARE = [
@@ -141,3 +142,5 @@ STATICFILES_DIRS = [
 
 # Static files from each app (if any)
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+handler404 = 'Quality_Check_App.views.custom_page_not_found'

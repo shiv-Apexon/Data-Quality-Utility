@@ -32,6 +32,7 @@ def data_quality_home(request):
 
 def select_platform(request):
         return render(request, 'QCA/select_platform.html')
+
 def dq_report_home(request):
      return render(request,'QCA/dataqualityreport.html')
 
@@ -869,3 +870,6 @@ def get_conn_name(request):
                 return print({'message': f'Error: {str(e)}'}, status=500)
     else:  
             return JsonResponse({"connections": []}, status=400)  # If no platform selected, return an empty list
+
+def custom_page_not_found(request, exception):
+    return render(request, 'QCA/404.html', status=404)
