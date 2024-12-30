@@ -1,6 +1,10 @@
 {% extends 'QCA\base.html' %}
 {% load static %}
 
+{% block title %}
+    Reporting
+{% endblock %}
+
 {% block content %}
 
 <div>
@@ -12,7 +16,7 @@
     <div class="d-flex flex-column flex-lg-row mt-lg-2 my-lg-4 px-3 pt-2">
         <div class="ic4_data_section_cards_holder d-flex gap-4 gap-lg-3 w-lg-50 w-75 justify-content-between">
             <div class="ic4_data_section_cards p-sm-3 p-2" id="connector_div">
-                <img src="{% static 'src/data-report.png' %}" alt="Img" class="">
+                <img src="{% static 'src\data-report.png' %}" alt="Img" class="">
                 <div class="mt-1">Report</div>
             </div>
         </div>

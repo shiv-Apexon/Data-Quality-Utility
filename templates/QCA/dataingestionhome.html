@@ -1,0 +1,60 @@
+{% extends 'QCA\base.html' %}
+{% load static %}
+
+{% block title %}
+    Data Ingestion Home
+{% endblock %}
+
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'QCA\css\dataingestionhome.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div>
+    <div class="ic4_data_section_heading d-flex align-items-end p-3 bg-body-tertiary">
+        <img src="{% static 'src/logo.png' %}" height="24px" width="24px" alt="">
+        <span class="mx-3 fw-normal fs-5">Data Ingestion</span>
+    </div>
+
+    <div class="d-flex flex-column flex-lg-row mt-lg-2 my-lg-4 px-3 pt-2">
+        <div class="ic4_data_section_cards_holder d-flex gap-4 gap-lg-3 w-lg-50 w-75 justify-content-start">
+            <div class="ic4_data_section_cards p-sm-3 p-2" id="connector_div">
+                <img src="/static/src/mind-mapping.png" alt="">
+                <div class="mt-1">Establish Connection</div>
+            </div>
+            <div class="ic4_data_section_cards p-sm-3 p-2" id="data_ingestion_div">
+                <img src="{% static 'src/ingestion.png' %}" alt="" class="p-1">
+                <div class="mt-1">Ingestion</div>
+            </div>
+        </div>
+
+        <div class="ic4_data_section_right_info d-flex w-lg-50 w-75 mt-lg-0 mt-5">
+            <div class="w-100">
+                <h4 class="border-bottom pb-2">Guide</h4>
+                <h6 class="fw-normal">Establish connection</h6>
+                <p class="ic4_data_section_right_info_data">
+                    <!-- Configure reusable and secure connection with
+                    the data source. Use the connection for data and metadata extraction. Supported
+                    connections - Database. File system, cloud -->
+                    Establish secure and reusable connections to various data sources like databases, file systems, and
+                    cloud services. These connections enable seamless data and metadata extraction and can be reused in
+                    the DQ configuration section for consistent and efficient data management. By utilizing these
+                    pre-configured connections, you ensure secure and optimized access to your data resources across
+                    different platforms.
+                </p>
+                <h6 class="fw-normal">Ingestion</h6>
+                <p class="ic4_data_section_right_info_data">
+                    ***Ingestion is the process of collecting, importing, and processing data from various sources into a storage system or data platform for further analysis. It is a crucial step in the data pipeline, ensuring that raw data is extracted from disparate sources (such as databases, APIs, logs, or files) and made available for processing, transformation, and analysis.
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'QCA\js\dataingestionhome.js' %}"></script>
+{% endblock %}

@@ -30,11 +30,17 @@ def index(request):
 def data_quality_home(request):
         return render(request, 'QCA/dataqualityhome.html')
 
+def data_ingestion_home(request):
+        return render(request, 'QCA/dataingestionhome.html')
+
 def select_platform(request):
         return render(request, 'QCA/select_platform.html')
 
 def dq_report_home(request):
      return render(request,'QCA/dataqualityreport.html')
+
+def custom_page_not_found(request, exception): #for production mode (DEBUG=False)
+    return render(request, 'QCA/404.html', status=404)
 
 def connect_db(request):
     message = None
@@ -871,5 +877,3 @@ def get_conn_name(request):
     else:  
             return JsonResponse({"connections": []}, status=400)  # If no platform selected, return an empty list
 
-def custom_page_not_found(request, exception):
-    return render(request, 'QCA/404.html', status=404)

@@ -18,13 +18,18 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import include, path
+from django.conf import settings
+from django.conf.urls.static import static
 from django.conf.urls import handler404
 from Quality_Check_App.views import custom_page_not_found
-
 
 urlpatterns = [
     path("", include("Quality_Check_App.urls")),
     path("admin/", admin.site.urls),
 ]
+
+# Serve static files in development when DEBUG=False in production
+if settings.DEBUG is False:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 handler404 = custom_page_not_found

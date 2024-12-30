@@ -20,5 +20,7 @@ urlpatterns = [
     path('get_conn_name/', views.get_conn_name, name='get_conn_name'),
     path('connect_db_with_conn_name/', views.connect_db_with_conn_name, name='connect_db_with_conn_name'),
 
-
+    # Data Ingestion
+    path('dataingestionhome/', views.data_ingestion_home, name='data_ingestion_home'),
+    path("dataingestionhome/select_platform", views.select_platform, name="select_platform"),
 ]
