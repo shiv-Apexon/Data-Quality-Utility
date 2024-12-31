@@ -28,13 +28,25 @@ def index(request):
     return render(request, 'QCA/home.html')
 
 def data_quality_home(request):
-        return render(request, 'QCA/dataqualityhome.html')
+    return render(request, 'QCA/dataqualityhome.html')
 
 def data_ingestion_home(request):
-        return render(request, 'QCA/dataingestionhome.html')
+    return render(request, 'QCA/dataingestionhome.html')
+
 
 def select_platform(request):
-        return render(request, 'QCA/select_platform.html')
+    platform = request.GET.get('platform', 'data_quality')  # Default to 'data_quality'
+
+    # Creating platform session to extend base template according to platform(data_ingestion or data_quality)
+    request.session['platform'] = platform
+    
+    # Decide which base template to use
+    if platform == 'data_ingestion':
+        base_template = r'QCA\base_data_ingestion.html'
+    else:
+        base_template = r'QCA\base_data_quality.html'
+
+    return render(request, 'QCA\select_platform.html', {'platform':platform,'base_template': base_template})
 
 def dq_report_home(request):
      return render(request,'QCA/dataqualityreport.html')
