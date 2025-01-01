@@ -154,9 +154,9 @@ def connect_db(request):
         else:
             message = "Other RDBMS are not available yet"
             toaster.show_toast("Connection Status", message, duration=2)
-            return render(request, 'QCA/index.html', {'message': message})
+            return render(request, 'QCA/database_connection.html', {'message': message})
 
-    return render(request, 'QCA/index.html', {'message': message})
+    return render(request, 'QCA/database_connection.html', {'message': message})
 
 
 @csrf_exempt
