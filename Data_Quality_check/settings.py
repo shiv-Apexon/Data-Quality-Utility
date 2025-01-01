@@ -14,7 +14,6 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-print(BASE_DIR)
 
 
 # Quick-start development settings - unsuitable for production
@@ -78,6 +77,46 @@ WSGI_APPLICATION = 'Data_Quality_check.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
+    #  'metadata_db': {
+    #     'ENGINE': 'django.db.backends.mysql',  # MySQL engine
+    #     'NAME': 'dq',
+    #     'USER': 'root',
+    #     'PASSWORD': 'Nana@8055#',
+    #     'HOST': 'localhost',
+    #     'PORT': 3306,
+    #     'OPTIONS': {},  # Optional extra parameters
+    # },
+     'metadata_db': {
+        'ENGINE': 'django.db.backends.mysql',  # MySQL engine
+        'NAME': 'dq',
+        'USER': 'admin',
+        'PASSWORD': 'Apexon121124',
+        'HOST': 'dq-source-db.cby4ges6cu0v.us-east-1.rds.amazonaws.com',
+        'PORT': 3306,
+        # 'OPTIONS': {},  # Optional extra parameters
+    },
+    'source_db': { # We can change the configuration to connect to any other database
+        'ENGINE': 'django.db.backends.postgresql',  # PostgreSQL engine
+        'NAME': 'source_database',
+        'USER': 'source_user',
+        'PASSWORD': 'source_password',
+        'HOST': 'source_host',
+        'PORT': 5432,
+        'OPTIONS': {},  # Optional extra parameters
+    },
+    'target_db': {
+        'ENGINE': 'sql_server.pyodbc',  # MSSQL engine (via ODBC)
+        'NAME': 'target_database',
+        'USER': 'target_user',
+        'PASSWORD': 'target_password',
+        'HOST': 'target_host',
+        'PORT': 1433,
+        'OPTIONS': {
+            'driver': 'ODBC Driver 17 for SQL Server',  # Required for MSSQL
+            'extra_params': 'TrustServerCertificate=yes;',
+        },
+    },
+    
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
@@ -131,7 +170,8 @@ STATIC_URL = '/static/'
 
 # Directory to collect static files when running `python manage.py collectstatic`
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',  # Global static directory
+    BASE_DIR / 'static',
+  # Global static directory
 ]
 
 # Static files from each app (if any)

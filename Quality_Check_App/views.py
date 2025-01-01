@@ -12,6 +12,8 @@ import json
 from django.http import JsonResponse
 from django.db import connection
 from django.template.loader import render_to_string
+from django.db import connections, OperationalError
+from Quality_Check_App.metsdata_models import ConnectionInfo
 
 CHECK_TYPE_MAP = {
     'NULL': 'NULL Values',
@@ -69,29 +71,24 @@ def connect_db(request):
 
         if db_engine == 'mysql':
             try:
-                # Try to establish a connection using mysql-connector
-                connection = mysql.connector.connect(
-                    host=host,
-                    user=username,
-                    password=password
-                )
+                # Try to establish a connection using the provided credentials
+                conn = pymysql.connect(host=host, user=username, password=password, port=int(port))
+                conn.close()
                 
-                # Check if the connection is successful
-                if connection.is_connected():
-                    # Save connection info in the session
-                    request.session['db_config'] = {
-                        'host':host,
-                        'username':username,
-                        'password':password,
-                        'db_engine':db_engine,
-                        'db_name': None
+                # Save connection info in the session
+                request.session['db_config'] = {
+                    'host': host,
+                    'username': username,
+                    'password': password,
+                    'db_engine': db_engine,
+                    'db_name': db_name,
+                    'port': port
+                }
 
-                        }
-
-                    cursor = connection.cursor()
-
-                    create_schema_query = f"CREATE SCHEMA IF NOT EXISTS dq;"
-                    create_table_query = '''
+                # Create schema and table if they don't exist
+                with connections['metadata_db'].cursor() as cursor:
+                    cursor.execute("CREATE SCHEMA IF NOT EXISTS dq;")
+                    cursor.execute('''
                         CREATE TABLE IF NOT EXISTS dq.connection_info (
                             conn_id INT AUTO_INCREMENT PRIMARY KEY,
                             connection_name VARCHAR(255) NOT NULL,
@@ -102,92 +99,64 @@ def connect_db(request):
                             password VARCHAR(255),
                             db_name VARCHAR(255)
                         );
-                    '''
+                    ''')
 
-                    cursor.execute(create_schema_query)
-                
-                # Use the schema
-                    cursor.execute(f"USE dq;")
-                    
-                    # Create table if it doesn't exist
-                    print("Creating table: connection_info")
-                    cursor.execute(create_table_query)
+                # Insert data into the 'connection_info' table
+                ConnectionInfo.objects.using('metadata_db').create(
+                    connection_name=connection_name,
+                    platform=db_engine,
+                    host=host,
+                    user=username,
+                    port=port,
+                    password=password,
+                    db_name=db_name
+                )
 
-                    # SQL query to insert data into the 'connection_info' table
-                    insert_query = """
-                    INSERT INTO dq.connection_info (connection_name, platform, host, user, port, password, db_name)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    """
+                message = "Successfully connected to the database!"
+                toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
+                return redirect('/dataqualityhome')
 
-                    # Data to be inserted
-                    data = (
-                        connection_name ,
-                        db_engine,
-                        host,
-                        username ,
-                        port ,
-                        password ,
-                        db_name ,
-                    )
-
-                    # Execute the insertion
-                    cursor.execute(insert_query, data)
-                    # Commit the transaction
-                    connection.commit()
-                    message = "Successfully connected to the database!"
-                    toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
-
-                    return redirect('/dataqualityhome')                    
-
-                else:
-                    message = "Failed to connect to the database."
-                    toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
-
-                connection.close()
-
-            except Error as e:
+            except OperationalError as e:
                 # If there is an error, send an appropriate message
                 message = f"Error: {e}"
                 toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
 
-
         elif db_engine == 'mssql':
             try:
-
                 # Use pyodbc for MSSQL
-                conn_str = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={host};UID={username};PWD={password}'
+                conn_str = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={host};UID={username};PWD={password};DATABASE={db_name};PORT={port}'
                 conn = pyodbc.connect(conn_str)
-                if conn :
+                if conn:
+                    conn.close()
                     # Save connection info in the session
                     request.session['db_config'] = {
-                        'host':host,
-                        'username':username,
-                        'password':password,
-                        'db_engine':db_engine,
-                        'db_name': None
-                        }
+                        'host': host,
+                        'username': username,
+                        'password': password,
+                        'db_engine': db_engine,
+                        'db_name': db_name,
+                        'port': port
+                    }
 
                     message = "Successfully connected to the database!"
                     toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
-                    return redirect('db_info') 
+                    return redirect('db_info')
 
                 else:
                     message = "Failed to connect to the database."
                     toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
-                conn.close()
 
-            except Error as e:
+            except OperationalError as e:
                 # If there is an error, send an appropriate message
                 message = f"Error: Connection Failed"
                 toaster.show_toast("Connection Status", message, duration=2)  # 2 seconds
-        
+
         else:
             message = "Other RDBMS are not available yet"
-            toaster.show_toast("Connection Status", message, duration=2) 
+            toaster.show_toast("Connection Status", message, duration=2)
             return render(request, 'QCA/index.html', {'message': message})
 
     return render(request, 'QCA/index.html', {'message': message})
-
 
 
 @csrf_exempt
@@ -200,45 +169,38 @@ def connect_db_with_conn_name(request):
 
         if conn_name:
             try:
-                db_config = request.session.get('db_config')
-                db_host = db_config['host']
-                db_user = db_config['username']
-                db_password = db_config['password'] 
+                # db_config = request.session.get('db_config')
+                # db_host = db_config['host']
+                # db_user = db_config['username']
+                # db_password = db_config['password'] 
 
-                conn = pymysql.connect(host=db_host, user=db_user, password=db_password)
-                cursor = conn.cursor()
-                with conn.cursor() as cursor:
-                    query = '''
-                        SELECT host, user, password, platform, db_name, port
-                        FROM dq.connection_info
-                        WHERE connection_name = %s;
-                    '''
-                    cursor.execute(query, [conn_name])
-                    result = cursor.fetchone()  # Fetch the first row (should be unique by connection_name)
+                result = ConnectionInfo.objects.using('metadata_db').get(connection_name=conn_name)
+                result = (result.host, result.user, result.password, result.platform, result.db_name, result.port)
+                print(result)
+                
+                if result:
+                    # Extract values from the query result
+                    host, user, password, platform, db_name, port = result
 
-                    if result:
-                        # Extract values from the query result
-                        host, user, password, platform, db_name, port = result
+                    # Store the connection details in the session
+                    request.session['db_config'] = {
+                        'host': host,
+                        'username': user,
+                        'password': password,
+                        'db_engine': platform, 
+                        'db_name': db_name,
+                        'port': port
+                    }
+                    print(request.session['db_config'])
+                    conn = pymysql.connect(host=host, user=user, password=password)
+                    cursor = conn.cursor()
+                    cursor.close()
+                    # Optionally, return a success response
+                    return JsonResponse({"message": "Database connection details stored in session successfully."})
 
-                        # Store the connection details in the session
-                        request.session['db_config'] = {
-                            'host': host,
-                            'username': user,
-                            'password': password,
-                            'db_engine': platform, 
-                            'db_name': db_name,
-                            'port': port
-                        }
-                        conn.close()
-                        print(request.session['db_config'])
-                        conn = pymysql.connect(host=host, user=user, password=password)
-                        cursor = conn.cursor()
-                        # Optionally, return a success response
-                        return JsonResponse({"message": "Database connection details stored in session successfully."})
-
-                    else:
-                        return JsonResponse({"error": "Connection name not found."}, status=404)
-            
+                else:
+                    return JsonResponse({"error": "Connection name not found."}, status=404)
+        
             except Exception as e:
                 # Handle any exceptions (e.g., database errors)
                 return JsonResponse({"error": str(e)}, status=500)
@@ -249,37 +211,17 @@ def connect_db_with_conn_name(request):
     return JsonResponse({"error": "Invalid request method."}, status=405)
 
 def get_all_connections(request):
-        # Retrieve the connection name from the POST request
+    try:
+        connections = ConnectionInfo.objects.using('metadata_db').all().values_list('connection_name', 'platform', 'db_name', 'host')
+        result = list(connections)
+    except Exception as e:
+        result = []
+        print(f"Error fetching data: {e}")
 
-            try:
-                db_config = request.session.get('db_config')
-                db_host = db_config['host']
-                db_user = db_config['username']
-                db_password = db_config['password'] 
-
-                conn = pymysql.connect(host=db_host, user=db_user, password=db_password)
-                cursor = conn.cursor()
-                
-                with conn.cursor() as cursor:
-                    query = '''
-                        SELECT connection_name,platform,db_name,host
-                        FROM dq.connection_info
-                    '''
-                    cursor.execute(query)
-                    result = cursor.fetchall()
-                    print("----------",result)
-
-            except Exception as e:
-                result = []
-                print(f"Error fetching data: {e}")
-            
-            context = {
-                'connections': result,
-            }    
-            print(context)       
-            return render(request, "QCA/connection_table.html",context)
-
-
+    context = {
+        'connections': result,
+    }
+    return render(request, "QCA/connection_table.html", context)
 
 def db_info(request):
 
@@ -470,6 +412,7 @@ def close_connection(request):
                 # Connect to MySQL database
                 conn = pymysql.connect(host=host, user=user, password=password)
                 conn.close()
+
                 request.session.clear() 
                 # Return a JSON response with the redirect URL
                 return JsonResponse({'redirect_url': '/dataqualityhome'})
@@ -853,39 +796,17 @@ def get_saved_details(request):
 
 @csrf_exempt
 def get_conn_name(request):
-
     data = json.loads(request.body.decode('utf-8'))
     platform = data.get('platform')
     db_config = request.session.get('db_config')
-    engine = db_config['db_engine']
     
     if platform:
         try:
-            if engine == "mysql":
-                db_host = db_config['host']
-                db_user = db_config['username']
-                db_password = db_config['password'] 
-
-                conn = pymysql.connect(host=db_host, user=db_user, password=db_password)
-                cursor = conn.cursor()
-            
-        # Query the database to get connection names for the selected platform
-            with conn.cursor() as cursor:
-                query = '''
-                    SELECT connection_name
-                    FROM dq.connection_info
-                    WHERE platform = %s;
-                '''
-                cursor.execute(query, [platform])
-                connections = cursor.fetchall()
-                
-                # Extract the connection names from the result
-                connection_names = [conn[0] for conn in connections]
-                
-                return JsonResponse({"connections": connection_names})
-            
+            # Query the database to get connection names for the selected platform using Django ORM
+            connections = ConnectionInfo.objects.using('metadata_db').filter(platform=platform).values_list('connection_name', flat=True)
+            connection_names = list(connections)
+            return JsonResponse({"connections": connection_names})
         except Exception as e:
-                return print({'message': f'Error: {str(e)}'}, status=500)
-    else:  
-            return JsonResponse({"connections": []}, status=400)  # If no platform selected, return an empty list
-
+            return JsonResponse({'message': f'Error: {str(e)}'}, status=500)
+    else:
+        return JsonResponse({"connections": []}, status=400)  # If no platform selected, return an empty list
