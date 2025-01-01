@@ -23,4 +23,5 @@ urlpatterns = [
     # Data Ingestion
     path('dataingestionhome/', views.data_ingestion_home, name='data_ingestion_home'),
     path("dataingestionhome/select_platform", views.select_platform, name="select_platform"),
+    path("dataingestionhome/data_ingestion", views.data_ingestion, name="data_ingestion"),
 ]

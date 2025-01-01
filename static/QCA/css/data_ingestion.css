@@ -1,0 +1,13 @@
+
+/* Add your custom CSS styles for the modal and other elements here */
+#behindContent {
+    background-color: #f8f9fa;
+}
+
+.modal {
+    display: none; /* Initially hidden */
+}
+
+.modal.show {
+    display: block; /* Show modal when triggered */
+}

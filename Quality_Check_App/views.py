@@ -35,6 +35,9 @@ def data_quality_home(request):
 def data_ingestion_home(request):
     return render(request, 'QCA/dataingestionhome.html')
 
+def data_ingestion(request):
+    return render(request, 'QCA/data_ingestion.html')
+
 
 def select_platform(request):
     platform = request.GET.get('platform', 'data_quality')  # Default to 'data_quality'
