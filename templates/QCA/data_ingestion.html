@@ -14,6 +14,8 @@
 
 
 {% block content %}
+    <!-- There are some inline css for modal -->
+
     <div class="mx-3">
         <!-- Multiple fields behind the popup (example fields) -->
         <div id="behindContent" class="p-3 mt-3 rounded-2">
@@ -24,37 +26,37 @@
 
     <!-- Modal for form (popup) -->
     <div class="modal" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable">
-            <div class="modal-content rounded-0">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="formModalLabel">Select Connection, Database, and Tables</h5>
+        <div class="modal-dialog">
+            <div class="modal-content rounded-0 border-0 shadow">
+                <div class="modal-header bg-primary rounded-0" style="height: 2rem;">
+                    <h5 class="modal-title text-white fs-6" id="formModalLabel">Select Connection, Database, and Tables</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body ">
                     <!-- Form starts here -->
                     <form id="connectionForm">
-                        <div class="mb-3">
-                            <label for="connection" class="form-label">Select Connection:</label>
-                            <select id="connection" name="connection" class="form-select" aria-label="Select Connection">
+                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                            <label for="connection" class="form-label text-body-secondary">Select Connection</label>
+                            <select id="connection" name="connection" class="form-select rounded-1" aria-label="Select Connection" style="width: 65%;">
                                 <option value="">--Select Connection--</option>
                             </select>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="database" class="form-label">Select Database:</label>
-                            <select id="database" name="database" class="form-select" aria-label="Select Database" disabled>
+                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                            <label for="database" class="form-label text-body-secondary">Select Database</label>
+                            <select id="database" name="database" class="form-select rounded-1" aria-label="Select Database" disabled style="width: 65%;">
                                 <option value="">--Select Database--</option>
                             </select>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="table" class="form-label">Select Table:</label>
-                            <select id="table" name="table" class="form-select" aria-label="Select Table" disabled>
+                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                            <label for="table" class="form-label text-body-secondary">Select Table</label>
+                            <select id="table" name="table" class="form-select rounded-1" aria-label="Select Table" disabled style="width: 65%;">
                                 <option value="">--Select Table--</option>
                             </select>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="submit" class="btn btn-primary float-end">Submit</button>
                     </form>
                     <!-- Form ends here -->
                 </div>

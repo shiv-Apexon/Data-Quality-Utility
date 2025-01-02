@@ -799,17 +799,21 @@ def get_saved_details(request):
 
 @csrf_exempt
 def get_conn_name(request):
+    
     data = json.loads(request.body.decode('utf-8'))
     platform = data.get('platform')
-    db_config = request.session.get('db_config')
     
-    if platform:
-        try:
+    try:
+        if platform and platform.lower() != 'all':
             # Query the database to get connection names for the selected platform using Django ORM
             connections = ConnectionInfo.objects.using('metadata_db').filter(platform=platform).values_list('connection_name', flat=True)
-            connection_names = list(connections)
-            return JsonResponse({"connections": connection_names})
-        except Exception as e:
-            return JsonResponse({'message': f'Error: {str(e)}'}, status=500)
-    else:
-        return JsonResponse({"connections": []}, status=400)  # If no platform selected, return an empty list
+        else:
+            # If platform is 'all', get all connection names
+ 
+            connections = ConnectionInfo.objects.using('metadata_db').all().values_list('connection_name', flat=True)
+        
+        connection_names = list(connections)
+
+        return JsonResponse({"connections": connection_names})
+    except Exception as e:
+        return JsonResponse({'message': f'Error: {str(e)}'}, status=500)

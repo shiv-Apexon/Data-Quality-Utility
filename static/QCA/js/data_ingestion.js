@@ -10,7 +10,12 @@ $(document).ready(function () {
     function loadConnections() {
         $.ajax({
             url: '/get_conn_name/',  // Replace with your Django URL
-            type: 'GET',
+            type: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'  // Add CSRF token for security
+            },
+            data: JSON.stringify( { platform: 'all' }),
+
             success: function (data) {
                 var connSelect = $('#connection');
                 connSelect.empty();
@@ -18,7 +23,7 @@ $(document).ready(function () {
 
                 // Add connection options
                 data.connections.forEach(function (conn) {
-                    connSelect.append('<option value="' + conn.id + '">' + conn.name + '</option>');
+                    connSelect.append('<option value="' + conn + '">' + conn + '</option>');
                 });
 
                 // Enable the connection select dropdown
@@ -29,7 +34,27 @@ $(document).ready(function () {
             }
         });
     }
-
+    // Handle connection selection change
+    $('#connection').change(function () {
+        var connName = $(this).val();
+        if (connName) {
+            $.ajax({
+                url: '/connect_db_with_conn_name/',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ conn_name: connName }),
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function (response) {
+                    alert('Connection details stored in session successfully.');
+                },
+                error: function (xhr, status, error) {
+                    alert('Error storing connection details: ' + xhr.responseText);
+                }
+            });
+        }
+    });
     // Load databases based on selected connection
     $('#connection').change(function () {
         var connectionId = $(this).val();
