@@ -32,12 +32,6 @@ def index(request):
 def data_quality_home(request):
     return render(request, 'QCA/dataqualityhome.html')
 
-def data_ingestion_home(request):
-    return render(request, 'QCA/dataingestionhome.html')
-
-def data_ingestion(request):
-    return render(request, 'QCA/data_ingestion.html')
-
 
 def select_platform(request):
     platform = request.GET.get('platform', 'data_quality')  # Default to 'data_quality'
@@ -59,10 +53,25 @@ def dq_report_home(request):
 def custom_page_not_found(request, exception): #for production mode (DEBUG=False)
     return render(request, 'QCA/404.html', status=404)
 
-def connect_db(request):
+# will shift this, need common view folder/file----------------------
+def connect_db(request): 
+    """
+    Description:
+      This function handles the database connection process based on user inputs from an HTTP POST request.
+      It supports MySQL and MSSQL databases, saves connection information in the session, and updates the metadata database.
+    Parameters:
+      request (HttpRequest): The HTTP request object containing user inputs for database connection.
+    Returns:
+      HttpResponse: The rendered HTML response for the database connection page or a redirect to another page upon successful connection.
+    """
+    
     message = None
 
     if request.method == 'POST':
+
+        # Base teplate will be dynamic in future commits ----------------
+        base_template = 'base_data_ingestion.html'
+
         # Get the user inputs (database host, username, password)
         db_engine = request.POST.get('database_engine')
         host = request.POST.get('host')
@@ -157,9 +166,9 @@ def connect_db(request):
         else:
             message = "Other RDBMS are not available yet"
             toaster.show_toast("Connection Status", message, duration=2)
-            return render(request, 'QCA/database_connection.html', {'message': message})
+            return render(request, 'database_connection.html', {'message': message, 'base_template': base_template})
 
-    return render(request, 'QCA/database_connection.html', {'message': message})
+    return render(request, 'database_connection.html', {'message': message, 'base_template': base_template})
 
 
 @csrf_exempt

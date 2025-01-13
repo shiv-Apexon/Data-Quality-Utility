@@ -1,0 +1,14 @@
+
+/* Add your custom CSS styles for the modal and other elements here */
+#behindContent {
+    border: 1px solid rgba(0,0,0,.125);
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0.125), 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.modal {
+    display: none; /* Initially hidden */
+}
+
+.modal.show {
+    display: block; /* Show modal when triggered */
+}

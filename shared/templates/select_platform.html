@@ -1,0 +1,196 @@
+{% extends base_template  %}
+
+{% load static %}
+
+{% block content %}
+
+<style>
+    /* Custom checkbox container */
+    .ic4_custom_checkbox {
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        width: 140px;
+        height: 130px;
+        box-sizing: border-box;
+    }
+
+    .ic4_custom_checkbox input[type="radio"] {
+        display: none;
+    }
+
+    /* Custom checkbox appearance */
+    .ic4_custom_checkbox input[type="radio"]:checked {
+        color: #4175b3;
+        border: none;
+    }
+
+    .ic4_custom_checkbox img {
+        height: 60px;
+        width: auto;
+    }
+
+    .ic4_source_img {
+        filter: grayscale(10%) contrast(35%) saturate(80%);
+    }
+
+    .custom-checkbox-label {
+        font-size: 16px;
+        padding: 10px;
+        width: 100%;
+        transition: all .3s cubic-bezier(.6, -0.28, .74, .05);
+        ;
+        color: gray;
+        border: 3px solid #ccc;
+    }
+
+    .ic4_custom_checkbox input[type="radio"]:checked+.custom-checkbox-label {
+        color: #4175b3;
+        border: 3px solid #1656a2;
+    }
+
+    .ic4_custom_checkbox input[type="radio"]:checked+.ic4_source_img {
+        filter: unset;
+    }
+
+    .ic4_custom_checkbox input[type="radio"]:hover+.custom-checkbox-label {
+        color: #4175b3;
+        border: 3px solid #1656a2;
+    }
+</style>
+
+<div class="ic4_data_section_heading d-flex justify-content-between align-items-center py-3 bg-secondary-subtle px-3">
+    <div class="d-flex align-items-end">
+        <img src="{% static 'src/logo.png' %}" height="24px" width="24px" alt="">
+        <span class="mx-3 fw-normal fs-5">Setup DQ Environment</span>
+    </div>
+    <div class="">
+        <div class="btn btn-primary"
+            style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: 1rem;"
+            id="view_edit_connections">
+            View/Edit Connections
+        </div>
+    </div>
+
+</div>
+<div class="d-flex flex-column mx-3">
+    <div class="">
+        <h5 class="mt-3">Select Source</h5>
+        <div class="mt-4 d-flex gap-3">
+
+            <label class="ic4_custom_checkbox d-flex flex-column justify-content-center align-items-center"
+                id="database_redio">
+                <input type="radio" name="select_source" id="checkbox1" checked>
+                <div
+                    class="custom-checkbox-label w-100 h-100 d-flex flex-column justify-content-start align-items-center gap-2">
+                    Database
+                    <img src="/static/src/database-svgrepo-com.svg" class="ic4_source_img" alt="DB">
+
+                </div>
+            </label>
+
+            <label class="ic4_custom_checkbox d-flex flex-column justify-content-center align-items-center">
+                <input type="radio" name="select_source" id="checkbox1">
+                <div
+                    class="custom-checkbox-label w-100 h-100 d-flex flex-column justify-content-start align-items-center gap-2">
+                    File
+                    <img src="/static/src/file.svg" class="ic4_source_img" alt="File">
+                </div>
+            </label>
+
+        </div>
+    </div>
+
+    <div class="mt-4 w-100">
+        <h5 class="mt-3">Select Platform</h5>
+        <div class="mt-4 d-flex gap-3 flex-column flex-md-row w-100">
+
+            <label class="ic4_custom_checkbox d-flex flex-column justify-content-center align-items-center" onclick="database_selected('Postgre')">
+                <input type="radio" name="select_database" id="postgre_db">
+                <div
+                    class="custom-checkbox-label w-100 h-100 d-flex flex-column justify-content-center align-items-center">
+                    <img src="/static/src/postgre.png" alt="Postgre">
+                </div>
+            </label>
+
+            <label class="ic4_custom_checkbox d-flex flex-column justify-content-center align-items-center" onclick="database_selected('MsSql')">
+                <input type="radio" name="select_database" id="mssql_db">
+                <div
+                    class="custom-checkbox-label w-100 h-100 d-flex flex-column justify-content-center align-items-center">
+
+                    <img src="/static/src/sqlserver.png" alt="Sqlserver">
+                </div>
+            </label>
+            <label class="ic4_custom_checkbox d-flex flex-column justify-content-center align-items-center"
+                onclick="database_selected('Snowflake')">
+                <input type="radio" name="select_database" id="snowflake_db">
+                <div
+                    class="custom-checkbox-label w-100 h-100 d-flex flex-column justify-content-center align-items-center">
+
+                    <img src="/static/src/snowflake.png" alt="Snoflake">
+                </div>
+            </label>
+            <label class="ic4_custom_checkbox d-flex flex-column justify-content-center align-items-center"
+                onclick="database_selected('Mysql')">
+                <input type="radio" name="select_database" id="mysql_db">
+                <div
+                    class="custom-checkbox-label w-100 h-100 d-flex flex-column justify-content-center align-items-center">
+
+                    <img src="/static/src/mysql.png" alt="mysql">
+                </div>
+            </label>
+            <label class="ic4_custom_checkbox d-flex flex-column justify-content-center align-items-center" onclick="database_selected('GBQuery')">
+                <input type="radio" name="select_database" id="bigquery_db">
+                <div
+                    class="custom-checkbox-label w-100 h-100 d-flex flex-column justify-content-center align-items-center">
+
+                    <img src="/static/src/google_bigquery.png" alt="GBQuery">
+                </div>
+            </label>
+
+        </div>
+
+         {% comment %} for later use {% endcomment %}
+        <div class="mt-3 d-flex gap-3 flex-column flex-md-row w-100 d-none">
+
+            <label class="ic4_custom_checkbox d-flex flex-column justify-content-center align-items-center"  onclick="database_selected('Postgre')">
+                <input type="radio" name="select_database" id="postgre_db">
+                <div
+                    class="custom-checkbox-label w-100 h-100 d-flex flex-column justify-content-center align-items-center">
+                    <img src="/static/src/postgre.png" alt="Postgre">
+                </div>
+            </label>
+
+            <label class="ic4_custom_checkbox d-flex flex-column justify-content-center align-items-center"  onclick="database_selected('MsSql')">
+                <input type="radio" name="select_database" id="mssql_db">
+                <div
+                    class="custom-checkbox-label w-100 h-100 d-flex flex-column justify-content-center align-items-center">
+
+                    <img src="/static/src/sqlserver.png" alt="Sqlserver">
+                </div>
+            </label>
+            <label class="ic4_custom_checkbox d-flex flex-column justify-content-center align-items-center">
+                <input type="radio" name="select_database" id="snowflake_db">
+                <div
+                    class="custom-checkbox-label w-100 h-100 d-flex flex-column justify-content-center align-items-center">
+
+                    <img src="/static/src/snowflake.png" alt="Snoflake">
+                </div>
+            </label>
+        </div>
+    </div>
+</div>
+
+<script>
+    function database_selected(platform) {
+        window.location.href = '/database_connection?platform=' + platform;
+    }
+</script>
+
+<script type="text/javascript">
+    document.getElementById('view_edit_connections').onclick = function () {
+        // Replace the following path with the desired Django URL
+        window.location.href = '/dataqualityhome/view_edit_connection'
+    };
+</script>
+
+{% endblock %}

@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'Quality_Check_App',
+    'Data_Transfer_App',
+    'defender', #Defender app
 ]
 
 MIDDLEWARE = [
@@ -48,7 +50,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'defender.middleware.FailedLoginMiddleware', # Defender middleware
+
 ]
+
+# If you're using Redis, ensure that this setting is correct
+DEFENDER_REDIS_URL = 'redis://localhost:6379/0'  # Update with your Redis host and port if needed
 
 ROOT_URLCONF = 'Data_Quality_check.urls'
 
@@ -56,7 +63,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            BASE_DIR / 'templates',  # Global templates directory
+            BASE_DIR / 'shared' / 'templates',  # Global templates directory
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -170,11 +177,17 @@ STATIC_URL = '/static/'
 
 # Directory to collect static files when running `python manage.py collectstatic`
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',
+    BASE_DIR / 'shared' / 'static',
   # Global static directory
 ]
 
 # Static files from each app (if any)
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# To enable the static files handling in development
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
 
 handler404 = 'Quality_Check_App.views.custom_page_not_found'

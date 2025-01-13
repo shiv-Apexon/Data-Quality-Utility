@@ -23,9 +23,12 @@ from django.conf.urls.static import static
 from django.conf.urls import handler404
 from Quality_Check_App.views import custom_page_not_found
 
+
 urlpatterns = [
-    path("", include("Quality_Check_App.urls")),
-    path("admin/", admin.site.urls),
+path("", include("Quality_Check_App.urls")),
+path("", include("Data_Transfer_App.urls")),
+path("admin/", admin.site.urls),
+path('admin/defender/', include('defender.urls')), # defender admin
 ]
 
 # Serve static files in development when DEBUG=False in production

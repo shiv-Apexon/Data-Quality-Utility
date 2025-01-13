@@ -1,0 +1,75 @@
+
+{% extends "base_data_ingestion.html" %}
+
+{% load static %}
+
+{% block title %}
+    Data Ingestion Dashboard
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'data_transfer_app\css\data_ingestion.css' %}">
+{% endblock %}
+
+
+{% block content %}
+    <!-- There are some inline css for modal -->
+
+    <div class="mx-3">
+        <!-- Multiple fields behind the popup (example fields) -->
+        <div id="behindContent" class="p-3 mt-3 rounded-2">
+            <h2>Other Content of Form</h2>
+            <p>multiple fields will be visible here.</p>
+        </div>
+    </div>
+
+    <!-- Modal for form (popup) -->
+    <div class="modal" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content rounded-0 border-0 shadow">
+                <div class="modal-header bg-primary rounded-0" style="height: 2rem;">
+                    <h5 class="modal-title text-white fs-6" id="formModalLabel">Select Connection, Database, and Tables</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body ">
+                    <!-- Form starts here -->
+                    <form id="connectionForm">
+                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                            <label for="connection" class="form-label text-body-secondary">Select Connection</label>
+                            <select id="connection" name="connection" class="form-select rounded-1" aria-label="Select Connection" style="width: 65%;">
+                                <option value="">--Select Connection--</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                            <label for="database" class="form-label text-body-secondary">Select Database</label>
+                            <select id="database" name="database" class="form-select rounded-1" aria-label="Select Database" disabled style="width: 65%;">
+                                <option value="">--Select Database--</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                            <label for="table" class="form-label text-body-secondary">Select Table</label>
+                            <select id="table" name="table" class="form-select rounded-1" aria-label="Select Table" disabled style="width: 65%;">
+                                <option value="">--Select Table--</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary float-end">Submit</button>
+                    </form>
+                    <!-- Form ends here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% block js %}
+    <!-- Bootstrap 5 JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{% static 'data_transfer_app\js\data_ingestion.js' %}"></script>
+    
+{% endblock %}
+
+{% endblock %}
