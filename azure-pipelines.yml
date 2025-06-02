@@ -1,0 +1,11 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- script: echo "✅ Azure DevOps pipeline is connected and working!"
+  displayName: 'Run test script'
